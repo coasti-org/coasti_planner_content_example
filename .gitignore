@@ -1,0 +1,32 @@
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+*.egg-info/
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+coverage.xml
+dist/
+build/
+
+# Environment / secrets
+.env
+.env.*
+!.env.example
+
+# Node (frontend)
+node_modules/
+
+# Nix / direnv
+.direnv/
+
+# OS / editor
+.DS_Store
+
+# Module Federation
+@mf-types
+.mf

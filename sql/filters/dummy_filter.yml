@@ -1,0 +1,13 @@
+id: dummy_filter
+name: "My Awesome Filter"
+description: "My Awesome Filter Description"
+
+# these are only relevant when we do _not_ want to use jinja expansion in the table.sqls
+applies_to_column: "amt"
+applies_to_screen: "__all__" # default if not set
+applies_to_table: "__all__that_have_column_amt" # default if not set
+
+# data_type: "__inferred_from_col_or_sql__
+
+# do this here, or set it in frontend?
+frontend_mode: "unique_dropdown" # or data range, or string match ...

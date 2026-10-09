@@ -1,0 +1,54 @@
+id: dummy_table
+name: "My Awesome Table"
+description: "My Awesome Table Description"
+
+columns:
+  - id: row_id
+    name: "Row ID"
+    data_type: int
+    description: "Stabile ID des Datensatzes"
+  - id: kreis
+    name: Kreis
+    data_type: str
+    description: "Kreis, dem die Buchung zugeordnet ist"
+  - id: amt
+    name: Amt
+    data_type: str
+    description: "Zuständiges Amt"
+  - id: haushaltstelle
+    name: Haushaltstelle
+    data_type: str
+    description: "Haushaltsstelle der Buchung"
+  - id: konto
+    name: Konto
+    data_type: str
+    description: "Sachkonto der Buchung"
+    style:
+      width: 120
+  - id: betrag
+    name: Betrag
+    data_type: float
+    description: "Betrag der Buchung in Euro"
+    style:
+      width: 120
+  - id: datum
+    name: Datum
+    data_type: date
+    description: "Datum der Buchung im ISO-Format"
+    style:
+      width: 120
+  - id: is_active
+    name: "On?"
+    data_type: bool
+    description: "Gibt an, ob der Datensatz aktiv ist"
+    style:
+      width: 60
+  - id: can_edit_group
+    name: "Bearbeitungsgruppen"
+    data_type: str
+    description:
+      "Kommagetrennte Liste der Gruppen, die den Datensatz bearbeiten dürfen"
+  - id: status
+    name: "Status"
+    data_type: str
+    description: "Status des Datensatzes: draft, locked oder done"
