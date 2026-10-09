@@ -3,8 +3,6 @@ backend:
   port: 8000
 database:
   connection_string: sqlite:///../coasti_planner_content_example/data/dummy.sqlite
-framework:
-  dist_folder: ../frontend/app/dist
 extension:
   dist_folder: ./dist
   sql_folder: ./sql

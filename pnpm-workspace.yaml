@@ -1,0 +1,3 @@
+registries:
+  https://git.linkfish.eu/api/packages/coasti/npm/:
+    scopes: ["@coasti"]

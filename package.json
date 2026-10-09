@@ -16,8 +16,8 @@
     "react-dom": "^19.3.0"
   },
   "devDependencies": {
-    "@coasti/planner-contract": "link:../frontend/contract",
-    "@coasti/planner-ui": "link:../frontend/ui",
+    "@coasti/planner-ui": "0.1.2",
+    "@coasti/planner-contract": "0.1.2",
     "@module-federation/vite": "^1.23.1",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
