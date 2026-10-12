@@ -1,0 +1,22 @@
+services:
+  planner:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    working_dir: /app
+    secrets:
+      - registry_ro_token
+    ports:
+      - "8000:8000"
+    volumes:
+      - ..:/app
+      - node_modules:/app/node_modules
+      - pnpm_store:/pnpm_store
+
+secrets:
+  registry_ro_token:
+    environment: REGISTRY_RO_TOKEN
+
+volumes:
+  node_modules:
+  pnpm_store:

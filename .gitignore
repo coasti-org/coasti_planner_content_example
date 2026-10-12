@@ -20,6 +20,7 @@ build/
 
 # Node (frontend)
 node_modules/
+.pnpm_store
 
 # Nix / direnv
 .direnv/

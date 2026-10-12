@@ -1,0 +1,8 @@
+backend:
+  host: 0.0.0.0
+  port: 8000
+database:
+  connection_string: sqlite:///../data/dummy.sqlite
+extension:
+  dist_folder: ../dist
+  sql_folder: ../sql
