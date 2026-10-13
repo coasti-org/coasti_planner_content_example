@@ -1,4 +1,8 @@
 -- The data source ID is the filename without the .sql suffix.
+
+-- just a query that the backend executes and shows in the frontend based
+-- on settings from dummy_table.py
+
 SELECT
     row_id,
     kreis,
