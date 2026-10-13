@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite --configLoader runner",
-    "build": "tsc --noEmit && vite build --configLoader runner",
+    "build": "tsc --noEmit && vite build --configLoader runner --outDir \"$(yq -r '.coasti_planner_extension.frontend_build_folder' coasti.yml)\"",
     "preview": "vite preview --configLoader runner",
     "typecheck": "tsc --noEmit"
   },
