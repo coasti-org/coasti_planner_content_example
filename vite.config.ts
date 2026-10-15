@@ -2,7 +2,7 @@ import { execFileSync } from "node:child_process";
 
 import { federation } from "@module-federation/vite";
 import react from "@vitejs/plugin-react";
-import { defineConfig, type Plugin } from "vite";
+import { defineConfig, loadEnv, type Plugin } from "vite";
 
 import {
   CONTRACT_VERSION,
@@ -51,11 +51,10 @@ function manifestPlugin(): Plugin {
   };
 }
 
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   server: {
     port: 5174,
   },
-  base: "/",
   plugins: [
     manifestPlugin(),
     federation({
@@ -90,7 +89,9 @@ export default defineConfig({
       // Use the host's runtime-core instead of bundling a second copy.
       experiments: { externalRuntime: true },
     }),
-    react({ reactRefreshHost: "http://localhost:5173" }),
+    // Point the refresh runtime at the host when a Vite host serves this
+    // extension. Unset for a built host, which injects its own runtime.
+    react({ reactRefreshHost: loadEnv(mode, ".").VITE_DEV_HOST_URL }),
   ],
   build: {
     target: "es2022",
@@ -98,4 +99,4 @@ export default defineConfig({
       input: "./src/index.tsx",
     },
   },
-});
+}));
