@@ -3,26 +3,30 @@ from __future__ import annotations
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from coasti_planner.extensions.models import Column, ColumnStyle, Table, ColumnDType
+from coasti_planner.extensions.models import CellAccess, Column, ColumnStyle, Table, ColumnDType
 
 if TYPE_CHECKING:
     from collections.abc import Mapping
 
 
-def can_edit(
+def can_access(
     row_id: int,
     user_group: str,
     column_name: str,
     row: Mapping[str, object],
-) -> bool:
+) -> CellAccess:
     """Return whether a user may edit one cell in a dummy-table row."""
     if row.get("row_id") != row_id:
-        return False
-    return (
+        raise NotImplementedError()
+
+    can_read = True
+    can_write = (
         user_group == "admin"
         and column_name in {"betrag", "is_active"}
         and row.get("status") == "draft"
     )
+
+    return CellAccess(can_read, can_write)
 
 
 dummy_table = Table(
@@ -30,6 +34,7 @@ dummy_table = Table(
     name="My Awesome Filter",
     description="My Awesome Filter Description",
     sql_path=Path("./dummy_table.sql"),
+    can_access=can_access,
     columns=[
         Column(
             id="row_id",
