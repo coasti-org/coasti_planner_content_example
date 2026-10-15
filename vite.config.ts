@@ -1,3 +1,5 @@
+import { execFileSync } from "node:child_process";
+
 import { federation } from "@module-federation/vite";
 import react from "@vitejs/plugin-react";
 import { defineConfig, type Plugin } from "vite";
@@ -7,14 +9,23 @@ import {
   type ExtensionManifest,
 } from "@coasti/planner-contract";
 
-import pkg from "./package.json" with { type: "json" };
+function coastiValue(path: string): string | undefined {
+  const value = execFileSync("yq", ["-r", path, "coasti.yml"], {
+    encoding: "utf8",
+  }).trim();
+  if (value === "" || value === "null") {
+    console.warn(`Missing coasti.yml field: ${path}`);
+    return undefined;
+  }
+  return value;
+}
 
-// Manifest needed by the extension loader to allow loading
-// the extension
+// Manifest needed by the extension loader to allow loading the extension.
 const manifest: ExtensionManifest = {
-  id: pkg.name,
-  name: pkg.name,
-  version: pkg.version,
+  id: coastiValue(".id") ?? "",
+  name: coastiValue(".name") ?? "",
+  version: coastiValue(".version") ?? "",
+  description: coastiValue(".description"),
   contractVersion: CONTRACT_VERSION,
   entry: "remoteEntry.js",
 };
@@ -48,7 +59,7 @@ export default defineConfig({
   plugins: [
     manifestPlugin(),
     federation({
-      name: pkg.name,
+      name: manifest.id,
       filename: "remoteEntry.js",
       exposes: {
         "./index": "./src/index.tsx",

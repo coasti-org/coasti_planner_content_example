@@ -12,9 +12,10 @@ id_shorthand: cpce
 # The name appears, for example, in the frontend dashboard and must be kept
 # consistent manually.
 name: "Coasti Planner Content Example"
+description: "Example content extension for the Coasti Planner."
 
 # The version follows SemVer and must be mirrored in package.json and
-# pyproject.toml. This must be done manually.
+# pyproject.toml. This is not fully automated yet.
 version: 0.1.0
 
 
