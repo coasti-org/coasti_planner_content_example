@@ -1,7 +1,8 @@
-import { execFileSync } from "node:child_process";
+import { readFileSync } from "node:fs";
 
 import { federation } from "@module-federation/vite";
 import react from "@vitejs/plugin-react";
+import { load } from "js-yaml";
 import { defineConfig, loadEnv, type Plugin } from "vite";
 
 import {
@@ -9,23 +10,20 @@ import {
   type ExtensionManifest,
 } from "@coasti/planner-contract";
 
-function coastiValue(path: string): string | undefined {
-  const value = execFileSync("yq", ["-r", path, "coasti.yml"], {
-    encoding: "utf8",
-  }).trim();
-  if (value === "" || value === "null") {
-    console.warn(`Missing coasti.yml field: ${path}`);
-    return undefined;
-  }
-  return value;
-}
+const coastiConfig = load(readFileSync("coasti.yml", "utf8")) as {
+  id: string;
+  name: string;
+  version: string;
+  description?: string;
+  coasti_planner_extension?: { frontend_build_folder?: string };
+};
 
 // Manifest needed by the extension loader to allow loading the extension.
 const manifest: ExtensionManifest = {
-  id: coastiValue(".id") ?? "",
-  name: coastiValue(".name") ?? "",
-  version: coastiValue(".version") ?? "",
-  description: coastiValue(".description"),
+  id: coastiConfig.id,
+  name: coastiConfig.name,
+  version: coastiConfig.version,
+  description: coastiConfig.description,
   contractVersion: CONTRACT_VERSION,
   entry: "remoteEntry.js",
 };
@@ -95,6 +93,8 @@ export default defineConfig(({ mode }) => ({
   ],
   build: {
     target: "es2022",
+    outDir:
+      coastiConfig.coasti_planner_extension?.frontend_build_folder ?? "dist",
     rolldownOptions: {
       input: "./src/index.tsx",
     },

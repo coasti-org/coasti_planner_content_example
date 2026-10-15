@@ -18,12 +18,10 @@ description: "Example content extension for the Coasti Planner."
 # pyproject.toml. This is not fully automated yet.
 version: 0.1.0
 
-
 # Specific to Cosati Planner Framework Extensions:
-
 coasti_planner_extension:
-    frontend_build_folder: ./dist
-    py_folders:
-        - ./tables
-        - ./filters
-        - ./actions
+  frontend_build_folder: ./dist
+  py_folders:
+    - ./tables
+    - ./filters
+    - ./actions
