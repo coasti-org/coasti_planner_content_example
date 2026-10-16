@@ -1,0 +1,6 @@
+
+
+# Here we want to be able to set from which folders the backend
+# will read the cp-level python models.
+
+# Here we also define where the dist gets compiled to.

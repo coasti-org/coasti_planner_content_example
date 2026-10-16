@@ -1,0 +1,20 @@
+
+
+host: 127.0.0.1
+port: 8000
+
+# What is the responsibility of this config file?
+# Variables needed for CP Deployment and runtime (not responsibility of creator!)
+
+extensions:
+    # the coasti yaml holds compile-time variables that should be set by CP creators
+    # while the yaml you are currently viewing holds runtime configs, like
+    # where the backend runs. (here we only need to point at extension folders)
+    - path: "./"
+      dev_url: "http://localhost:5174"
+      # when dev_url is set, use this instead of the dist folder that is configured
+      # in the coasti.yml. py_models are still used from the specified path.
+
+      database: sqlite:///../coasti_planner_content_example/data/dummy.sqlite
+      # TODO: we want to specify this in the coasti.yml (default) but its alsow
+      # a runtime thing. maybe allow an overwrite.

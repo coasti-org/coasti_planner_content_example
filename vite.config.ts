@@ -1,20 +1,29 @@
+import { readFileSync } from "node:fs";
+
 import { federation } from "@module-federation/vite";
 import react from "@vitejs/plugin-react";
-import { defineConfig, type Plugin } from "vite";
+import { load } from "js-yaml";
+import { defineConfig, loadEnv, type Plugin } from "vite";
 
 import {
   CONTRACT_VERSION,
   type ExtensionManifest,
 } from "@coasti/planner-contract";
 
-import pkg from "./package.json" with { type: "json" };
+const coastiConfig = load(readFileSync("coasti.yml", "utf8")) as {
+  id: string;
+  name: string;
+  version: string;
+  description?: string;
+  coasti_planner_extension?: { frontend_build_folder?: string };
+};
 
-// Manifest needed by the extension loader to allow loading
-// the extension
+// Manifest needed by the extension loader to allow loading the extension.
 const manifest: ExtensionManifest = {
-  id: pkg.name,
-  name: pkg.name,
-  version: pkg.version,
+  id: coastiConfig.id,
+  name: coastiConfig.name,
+  version: coastiConfig.version,
+  description: coastiConfig.description,
   contractVersion: CONTRACT_VERSION,
   entry: "remoteEntry.js",
 };
@@ -40,15 +49,14 @@ function manifestPlugin(): Plugin {
   };
 }
 
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   server: {
     port: 5174,
   },
-  base: "/",
   plugins: [
     manifestPlugin(),
     federation({
-      name: pkg.name,
+      name: manifest.id,
       filename: "remoteEntry.js",
       exposes: {
         "./index": "./src/index.tsx",
@@ -79,12 +87,16 @@ export default defineConfig({
       // Use the host's runtime-core instead of bundling a second copy.
       experiments: { externalRuntime: true },
     }),
-    react({ reactRefreshHost: "http://localhost:5173" }),
+    // Point the refresh runtime at the host when a Vite host serves this
+    // extension. Unset for a built host, which injects its own runtime.
+    react({ reactRefreshHost: loadEnv(mode, ".").VITE_DEV_HOST_URL }),
   ],
   build: {
     target: "es2022",
+    outDir:
+      coastiConfig.coasti_planner_extension?.frontend_build_folder ?? "dist",
     rolldownOptions: {
       input: "./src/index.tsx",
     },
   },
-});
+}));
