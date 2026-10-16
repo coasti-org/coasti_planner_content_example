@@ -9,7 +9,7 @@ import {
 export function ScreenA() {
   return (
     <DataProvider>
-      <h3>Themed extension screen</h3>
+      <h3>Screen A</h3>
       <p>This screen uses Ant Design with the extension theme.</p>
       <Button type="primary">Themed action</Button>
       <p>Filter Example</p>

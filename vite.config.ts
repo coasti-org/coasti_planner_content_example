@@ -15,17 +15,21 @@ const coastiConfig = load(readFileSync("coasti.yml", "utf8")) as {
   name: string;
   version: string;
   description?: string;
-  coasti_planner_extension?: { frontend_build_folder?: string };
+  coasti_planner_extension: {
+    frontend_build_folder: string;
+    home_screen_id: string;
+  };
 };
 
 // Manifest needed by the extension loader to allow loading the extension.
 const manifest: ExtensionManifest = {
-  id: coastiConfig.id,
-  name: coastiConfig.name,
-  version: coastiConfig.version,
-  description: coastiConfig.description,
-  contractVersion: CONTRACT_VERSION,
-  entry: "remoteEntry.js",
+    id: coastiConfig.id,
+    name: coastiConfig.name,
+    version: coastiConfig.version,
+    description: coastiConfig.description,
+    home_screen_id: coastiConfig.coasti_planner_extension.home_screen_id,
+    contractVersion: CONTRACT_VERSION,
+    entry: "remoteEntry.js",
 };
 
 function manifestPlugin(): Plugin {
@@ -93,8 +97,7 @@ export default defineConfig(({ mode }) => ({
   ],
   build: {
     target: "es2022",
-    outDir:
-      coastiConfig.coasti_planner_extension?.frontend_build_folder ?? "dist",
+    outDir: coastiConfig.coasti_planner_extension.frontend_build_folder ?? "dist",
     rolldownOptions: {
       input: "./src/index.tsx",
     },

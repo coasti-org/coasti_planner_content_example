@@ -1,8 +1,12 @@
 import { ConfigProvider } from "antd";
 import type { PropsWithChildren } from "react";
 
-import type { ExtensionContext } from "@coasti/planner-contract";
+import type {
+  ExtensionContext,
+  ExtensionScreen,
+} from "@coasti/planner-contract";
 
+import { HomePage } from "./homePage";
 import { LandingPageCard } from "./landingPageCard";
 import { ScreenA } from "./screenA";
 
@@ -28,18 +32,44 @@ function ExtensionTheme({ children }: PropsWithChildren) {
 
 export function activate(context: ExtensionContext): void {
   console.log("extension activating...");
+
+  const screens: ExtensionScreen[] = [
+    // PS: we should create a class for this, that can be extended?
+    // we already have the interface, next, lets make CP Devs use those.
+    // but did not find a pattern i liked yet
+    {
+      id: "/screen_a",
+      name: "Screen A",
+      url: context.screen_url("/screen_a"),
+      content: <ScreenA />,
+    },
+  ];
+  const homeScreen: ExtensionScreen = {
+    id: context.manifest.home_screen_id,
+    name: "Home",
+    url: context.screen_url(context.manifest.home_screen_id),
+    content: (
+      <ExtensionTheme>
+        <HomePage screens={screens} />
+      </ExtensionTheme>
+    ),
+  };
+
   context.set_card(
     <ExtensionTheme>
       <LandingPageCard
         description={context.manifest.description}
+        homeScreenUrl={homeScreen.url}
         name={context.manifest.name}
       />
     </ExtensionTheme>,
   );
-
-  const screens = new Map([["A", <ScreenA />]]);
-  screens.forEach((screen, path) => {
-    context.add_screen(<ExtensionTheme>{screen}</ExtensionTheme>, path);
+  context.add_screen(homeScreen);
+  screens.forEach((screen) => {
+    context.add_screen({
+      ...screen,
+      content: <ExtensionTheme>{screen.content}</ExtensionTheme>,
+    });
   });
 
   console.log("extension activated");
