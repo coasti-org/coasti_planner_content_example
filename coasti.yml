@@ -20,7 +20,6 @@ version: 0.1.0
 
 # Specific to Cosati Planner Framework Extensions:
 coasti_planner_extension:
-  home_screen_id: /home
   frontend_build_folder: ./dist
   py_folders:
     - ./tables

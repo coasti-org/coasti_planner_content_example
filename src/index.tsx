@@ -1,10 +1,7 @@
 import { ConfigProvider } from "antd";
 import type { PropsWithChildren } from "react";
 
-import type {
-  ExtensionContext,
-  ExtensionScreen,
-} from "@coasti/planner-contract";
+import type { ExtensionRuntimeContract } from "@coasti/planner-contract";
 
 import { HomePage } from "./homePage";
 import { LandingPageCard } from "./landingPageCard";
@@ -30,47 +27,33 @@ function ExtensionTheme({ children }: PropsWithChildren) {
   );
 }
 
-export function activate(context: ExtensionContext): void {
+const screens = [{ id: "/screen_a", name: "Screen A", content: <ScreenA /> }];
+
+export function activate(runtime: ExtensionRuntimeContract): void {
   console.log("extension activating...");
 
-  const screens: ExtensionScreen[] = [
-    // PS: we should create a class for this, that can be extended?
-    // we already have the interface, next, lets make CP Devs use those.
-    // but did not find a pattern i liked yet
-    {
-      id: "/screen_a",
-      name: "Screen A",
-      url: context.screen_url("/screen_a"),
-      content: <ScreenA />,
-    },
-  ];
-  const homeScreen: ExtensionScreen = {
-    id: context.manifest.home_screen_id,
-    name: "Home",
-    url: context.screen_url(context.manifest.home_screen_id),
-    content: (
-      <ExtensionTheme>
-        <HomePage screens={screens} />
-      </ExtensionTheme>
-    ),
-  };
+  runtime.set_home_screen(
+    <ExtensionTheme>
+      <HomePage screens={screens.map(({ id, name }) => ({ id, name }))} />
+    </ExtensionTheme>,
+    { id: "/home", name: "Home" },
+  );
 
-  context.set_card(
+  runtime.set_card(
     <ExtensionTheme>
       <LandingPageCard
-        description={context.manifest.description}
-        homeScreenUrl={homeScreen.url}
-        name={context.manifest.name}
+        description={runtime.manifest.description}
+        name={runtime.manifest.name}
       />
     </ExtensionTheme>,
   );
-  context.add_screen(homeScreen);
-  screens.forEach((screen) => {
-    context.add_screen({
-      ...screen,
-      content: <ExtensionTheme>{screen.content}</ExtensionTheme>,
+
+  for (const { id, name, content } of screens) {
+    runtime.add_screen(<ExtensionTheme>{content}</ExtensionTheme>, {
+      id,
+      name,
     });
-  });
+  }
 
   console.log("extension activated");
 }
