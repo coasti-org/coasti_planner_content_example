@@ -1,18 +1,18 @@
 import { Typography } from "antd";
 
-import type { ExtensionScreen } from "@coasti/planner-contract";
+import { useExtension } from "@coasti/planner-ui/components";
 
-export interface HomePageProps {
-  screens: Pick<ExtensionScreen, "id" | "name">[];
-}
+export function HomePage() {
+  const { screens } = useExtension();
 
-export function HomePage({ screens }: HomePageProps) {
   return (
     <section>
       <Typography.Title level={3}>Available screens</Typography.Title>
       <ul>
-        {screens.map((screen) => (
-          <li key={screen.id}>{screen.name}</li>
+        {[...screens.values()].map((screen) => (
+          <li key={screen.id}>
+            <Typography.Link href={screen.url}>{screen.name}</Typography.Link>
+          </li>
         ))}
       </ul>
     </section>
