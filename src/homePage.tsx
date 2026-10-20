@@ -1,10 +1,10 @@
-import { Link } from "@tanstack/react-router";
 import { Typography } from "antd";
 
+import { ScreenLink } from "@coasti/planner-ui/components";
 import { useExtension } from "@coasti/planner-ui/contexts";
 
 export function HomePage() {
-  const { manifest, screens } = useExtension();
+  const { screens } = useExtension();
 
   return (
     <section>
@@ -12,12 +12,7 @@ export function HomePage() {
       <ul>
         {[...screens.values()].map((screen) => (
           <li key={screen.id}>
-            <Link
-              params={{ extensionId: manifest.id, screen: screen.id }}
-              to="/extension/$extensionId/$screen"
-            >
-              {screen.name}
-            </Link>
+            <ScreenLink screenId={screen.id}>{screen.name}</ScreenLink>
           </li>
         ))}
       </ul>
