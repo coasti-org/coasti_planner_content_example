@@ -36,8 +36,12 @@ def can_access(
     """
 
     can_read = True
+
+    # unpack the column, it holds a list of comma-separated roles as string
+    allowed_roles = str(row.get("can_edit_roles", "")).split(",")
+
     can_write = (
-        "admin" in user.groups
+        any(role in allowed_roles for role in user.roles)
         and column in {"betrag", "is_active"}
         and row.get("status") == "draft"
     )
@@ -105,11 +109,11 @@ dummy_table = Table(
             style=ColumnStyle(width=60),
         ),
         Column(
-            id="can_edit_group",
-            name="Bearbeitungsgruppen",
+            id="can_edit_roles",
+            name="Bearbeitungsrollen",
             data_type=ColumnDType.STRING,
             description=(
-                "Kommagetrennte Liste der Gruppen, die den Datensatz bearbeiten dürfen"
+                "Kommagetrennte Liste der Rollen, die den Datensatz bearbeiten dürfen"
             ),
         ),
         Column(

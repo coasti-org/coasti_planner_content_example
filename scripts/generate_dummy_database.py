@@ -17,7 +17,7 @@ AMT_VALUES = (
 )
 HAUSHALTSTELLE_VALUES = ("11101", "21102", "31103", "42104", "51105", "61106")
 KONTO_VALUES = ("427100", "441100", "521100", "543100", "681100", "783100")
-EDIT_GROUP_VALUES = ("admin", "user", "wheel")
+EDIT_GROUP_VALUES = ("bearbeiter", "controller", "politiker")
 STATUS_VALUES = ("draft", "locked", "done")
 ROW_COUNT = 300
 RANDOM_SEED = 20261008
@@ -78,11 +78,11 @@ def build_sql(rows: list[tuple[int, str, str, str, str, float, str, int, str, st
             "    betrag REAL NOT NULL CHECK (betrag >= 0),",
             "    datum TEXT NOT NULL,",
             "    is_active INTEGER NOT NULL CHECK (is_active IN (0, 1)),",
-            "    can_edit_group TEXT NOT NULL,",
+            "    can_edit_roles TEXT NOT NULL,",
             "    status TEXT NOT NULL CHECK (status IN ('draft', 'locked', 'done'))",
             ");",
             "",
-            "INSERT INTO dummy_table (row_id, kreis, amt, haushaltstelle, konto, betrag, datum, is_active, can_edit_group, status) VALUES",
+            "INSERT INTO dummy_table (row_id, kreis, amt, haushaltstelle, konto, betrag, datum, is_active, can_edit_roles, status) VALUES",
             values + ";",
             "",
         )

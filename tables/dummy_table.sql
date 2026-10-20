@@ -12,7 +12,7 @@ SELECT
     betrag,
     datum,
     is_active,
-    can_edit_group,
+    can_edit_roles,
     status
 FROM dummy_table
 
