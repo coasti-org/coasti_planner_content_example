@@ -3,26 +3,46 @@ from __future__ import annotations
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from coasti_planner.extensions.models import CellAccess, Column, ColumnStyle, Table, ColumnDType
+from coasti_planner.extensions.models import (
+    CellAccess,
+    Column,
+    ColumnDType,
+    ColumnStyle,
+    Table,
+)
 
 if TYPE_CHECKING:
-    from collections.abc import Mapping
+    from coasti_planner.extensions.models import User
 
 
 def can_access(
-    row_id: int,
-    user_group: str,
-    column_name: str,
-    row: Mapping[str, object],
+    *,
+    user: User,
+    column: str,
+    row: dict[str, object],
 ) -> CellAccess:
-    """Return whether a user may edit one cell in a dummy-table row."""
-    if row.get("row_id") != row_id:
-        raise NotImplementedError()
+    """
+    Return whether a user can read and/or write one cell in a table.
+
+    # Arguments
+    - ``rows`` contains the data of the row (mapping column names to values)
+      and can be used to decide access based on the row's content.
+    - ``column`` is the name of the column for which access is requested.
+    - ``user`` contains details of the user requesting access, including their groups
+      and rules.
+
+    # Returns
+    - ``CellAccess`` a tuple of two booleans (read, write)
+    """
 
     can_read = True
+
+    # unpack the column, it holds a list of comma-separated roles as string
+    allowed_roles = str(row.get("can_edit_roles", "")).split(",")
+
     can_write = (
-        user_group == "admin"
-        and column_name in {"betrag", "is_active"}
+        any(role in allowed_roles for role in user.roles)
+        and column in {"betrag", "is_active"}
         and row.get("status") == "draft"
     )
 
@@ -89,11 +109,11 @@ dummy_table = Table(
             style=ColumnStyle(width=60),
         ),
         Column(
-            id="can_edit_group",
-            name="Bearbeitungsgruppen",
+            id="can_edit_roles",
+            name="Bearbeitungsrollen",
             data_type=ColumnDType.STRING,
             description=(
-                "Kommagetrennte Liste der Gruppen, die den Datensatz bearbeiten dürfen"
+                "Kommagetrennte Liste der Rollen, die den Datensatz bearbeiten dürfen"
             ),
         ),
         Column(

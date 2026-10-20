@@ -2,8 +2,8 @@
 
 ## Run with Docker
 
-Set `REGISTRY_RO_TOKEN` to a read-only Coasti npm-registry token, then build
-and start from this repository. (temporary until fully public)
+Set `REGISTRY_RO_TOKEN` to a read-only Coasti npm-registry token, then build and
+start from this repository. (temporary until fully public)
 
 ```powershell
 # bash
@@ -15,17 +15,18 @@ $env:REGISTRY_RO_TOKEN = "<read-only token>"
 docker compose -f docker/docker-compose.yaml build
 docker compose -f docker/docker-compose.yaml up
 ```
+
 - Visit `localhost:8000`
 
 **Notes**
 
-- The docker build installs Node, pnpm, and uv, and copies the entrypoint into the image.
-- When started, Compose mounts this repo at `/app` and keeps `node_modules` and the
-  pnpm store in a Docker volume.
+- The docker build installs Node, pnpm, and uv, and copies the entrypoint into
+  the image.
+- When started, Compose mounts this repo at `/app` and keeps `node_modules` and
+  the pnpm store in a Docker volume.
 - The entrypoint installs project dependencies, builds the extension into
   `dist/`, then starts the backend on port 8000.
 - Rebuild the image after changing `docker/entrypoint.sh`.
-
 
 ## Run on Host
 
@@ -74,5 +75,3 @@ coasti-planner ./config.example.yml --dev
 ```
 
 visit `localhost:8000`
-
-

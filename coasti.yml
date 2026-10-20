@@ -16,7 +16,7 @@ description: "Example content extension for the Coasti Planner."
 
 # The version follows SemVer and must be mirrored in package.json and
 # pyproject.toml. This is not fully automated yet.
-version: 0.1.0
+version: 0.2.0
 
 # Specific to Cosati Planner Framework Extensions:
 coasti_planner_extension:
