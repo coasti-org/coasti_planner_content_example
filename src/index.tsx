@@ -1,7 +1,7 @@
 import { ConfigProvider } from "antd";
 import type { PropsWithChildren } from "react";
 
-import type { ExtensionContext } from "@coasti/planner-contract";
+import type { ExtensionRuntimeContract } from "@coasti/planner-contract";
 
 import { ScreenA } from "./screenA";
 
@@ -22,13 +22,14 @@ function ExtensionTheme({ children }: PropsWithChildren) {
   );
 }
 
-export function activate(context: ExtensionContext): void {
-  console.log("extension activating...");
+function ThemedScreenA() {
+  return (
+    <ExtensionTheme>
+      <ScreenA />
+    </ExtensionTheme>
+  );
+}
 
-  const screens = new Map([["A", <ScreenA />]]);
-  screens.forEach((screen, path) => {
-    context.add_screen(<ExtensionTheme>{screen}</ExtensionTheme>, path);
-  });
-
-  console.log("extension activated");
+export function activate(context: ExtensionRuntimeContract): void {
+  context.add_screen(ThemedScreenA, { id: "A", name: "Screen A" });
 }
