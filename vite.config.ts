@@ -78,6 +78,12 @@ export default defineConfig(({ mode }) => ({
           singleton: true,
           import: false,
         },
+        // Consume the host's antd so extension components inherit the global
+        // theme; never bundle a second copy.
+        antd: {
+          singleton: true,
+          import: false,
+        },
         "@coasti/planner-ui/components": {
           singleton: true,
           import: false,
