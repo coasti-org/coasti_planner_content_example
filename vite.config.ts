@@ -86,6 +86,10 @@ export default defineConfig(({ mode }) => ({
           singleton: true,
           import: false,
         },
+        "@tanstack/react-router": {
+          singleton: true,
+          import: false,
+        },
       },
       dts: false,
       // Use the host's runtime-core instead of bundling a second copy.
