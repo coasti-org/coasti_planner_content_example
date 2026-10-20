@@ -1,6 +1,6 @@
 {
   "name": "cp-example-extension",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -16,8 +16,8 @@
     "react-dom": "^19.3.0"
   },
   "devDependencies": {
-    "@coasti/planner-contract": "link:../frontend/contract",
-    "@coasti/planner-ui": "link:../frontend/ui",
+    "@coasti/planner-contract": "0.2.0",
+    "@coasti/planner-ui": "0.2.0",
     "@module-federation/vite": "^1.23.1",
     "@types/js-yaml": "^4.0.9",
     "@types/react": "^19.3.0",
