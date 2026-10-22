@@ -61,6 +61,7 @@ dummy_table = Table(
             name="Row ID",
             data_type=ColumnDType.INTEGER,
             description="Stabile ID des Datensatzes",
+            is_key=True,
         ),
         Column(
             id="kreis",

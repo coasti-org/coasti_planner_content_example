@@ -2,6 +2,7 @@ import {
   ActionButton,
   DataFilter,
   DataTable,
+  PersistButton,
 } from "@coasti/planner-ui/components";
 
 export function ScreenA() {
@@ -16,6 +17,7 @@ export function ScreenA() {
       <DataFilter sourceSqlId="dummy_filter" />
       <p>SQLite Table</p>
       <DataTable filterIds={["dummy_filter"]} sourceSqlId="dummy_table" />
+      <PersistButton tableId="dummy_table" />
     </>
   );
 }
