@@ -1,8 +1,0 @@
-backend:
-  host: 127.0.0.1
-  port: 8000
-database:
-  connection_string: sqlite:///../coasti_planner_content_example/data/dummy.sqlite
-extension:
-  dist_folder: ./dist
-  sql_folder: ./sql

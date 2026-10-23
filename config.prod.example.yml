@@ -1,0 +1,21 @@
+# Runtime configuration for the Coasti Planner backend in production mode.
+#
+# Keep this file in the extension root and pass its path to the backend:
+#
+#     coasti-planner config.prod.example.yml
+#
+# Relative paths resolve against this file, so `data/...` and `extensions[].path`
+# are read relative to the folder holding the config.
+host: 0.0.0.0
+port: 8000
+mode: prod
+log_level: info
+
+# Framework meta database (users, permissions, application metadata).
+database: sqlite:///./data/coasti_planner.sqlite
+
+extensions:
+  # The folder holding this extension's coasti.yml; "." is this repository.
+  - path: "./"
+    # Content database for the example table.
+    database: sqlite:///./data/dummy.sqlite

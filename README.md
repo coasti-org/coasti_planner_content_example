@@ -2,31 +2,54 @@
 
 ## Run with Docker
 
-Set `REGISTRY_RO_TOKEN` to a read-only Coasti npm-registry token, then build and
-start from this repository. (temporary until fully public)
+Two compose files live in `docker/`:
 
-```powershell
+- `docker-compose.prod.yaml` builds the extension and serves the production
+  bundle from the backend.
+- `docker-compose.dev.yaml` runs the backend with model hot reload and the
+  extension's Vite dev server.
+
+Both need a read-only Coasti npm-registry token in `REGISTRY_RO_TOKEN`
+(temporary until the packages are fully public).
+
+```bash
 # bash
 export REGISTRY_RO_TOKEN="<read-only token>"
 
 # powershell
 $env:REGISTRY_RO_TOKEN = "<read-only token>"
-
-docker compose -f docker/docker-compose.yaml build
-docker compose -f docker/docker-compose.yaml up
 ```
 
-- Visit `localhost:8000`
+### Production
+
+```bash
+docker compose -f docker/docker-compose.prod.yaml up --build
+```
+
+Open `http://localhost:8000`.
+
+### Development
+
+```bash
+docker compose -f docker/docker-compose.dev.yaml up --build
+```
+
+Open `http://localhost:8000`. The backend reloads the extension's pydantic
+models, and the frontend hot-reloads from the Vite server on port `5174`.
 
 **Notes**
 
-- The docker build installs Node, pnpm, and uv, and copies the entrypoint into
-  the image.
-- When started, Compose mounts this repo at `/app` and keeps `node_modules` and
-  the pnpm store in a Docker volume.
-- The entrypoint installs project dependencies, builds the extension into
-  `dist/`, then starts the backend on port 8000.
-- Rebuild the image after changing `docker/entrypoint.sh`.
+- The image installs Node, pnpm, uv, and the pinned `coasti-planner` 0.2.2
+  release, which bundles both the production and the development framework
+  assets.
+- Compose mounts this repository at `/app` and keeps `node_modules` and the pnpm
+  store in Docker volumes.
+- Rebuild the image after changing `docker/entrypoint.prod.sh` or
+  `docker/entrypoint.dev.sh`.
+- If pnpm reports an incompatible `node_modules` volume (for example
+  `ERR_PNPM_ABORTED_REMOVE_MODULES_DIR_NO_TTY`), the entrypoints recover by
+  purging it automatically. To start from a clean slate instead, remove the
+  volumes with `docker compose -f docker/docker-compose.prod.yaml down -v`.
 
 ## Run on Host
 
@@ -34,44 +57,80 @@ docker compose -f docker/docker-compose.yaml up
 
 **Frontend**
 
-Install node >= 24 and pnpm >= 11
+Install node >= 24 and pnpm >= 11:
 
 ```bash
 pnpm config set "//git.linkfish.eu/api/packages/coasti/npm/:_authToken" "$REGISTRY_RO_TOKEN"
-pnpm i
+pnpm install
 ```
 
 **Backend**
 
-Install uv
+Install uv:
 
 ```bash
-uv tool install coasti_planner
+uv tool install coasti-planner
 ```
 
-Create dummy database
+Generate the dummy database:
 
 ```bash
 python ./scripts/generate_dummy_database.py
 ```
 
+### Configs
+
+The backend is always started with a runtime config. Keep it in this directory
+(the extension root): relative paths such as `extensions[].path` and `database`
+resolve against the config file. The compose files pass
+`config.prod.example.yml` / `config.dev.example.yml` directly; copy and edit one
+to use your own settings, then point the backend (or the compose `entrypoint`)
+at the copy:
+
+```bash
+cp config.dev.example.yml config.dev.yml
+```
+
 ### Run
 
-**from build dist**
+**Production (serves the prebuilt extension)**
 
 ```bash
 pnpm build
-coasti-planner ./config.example.yml
+coasti-planner config.prod.example.yml
 ```
 
-**WIP: development server**
+**Development (backend reload + Vite dev server)**
 
 ```bash
-# console 1
-pnpm run dev
+# terminal 1
+coasti-planner config.dev.example.yml
 
-# console 2
-coasti-planner ./config.example.yml --dev
+# terminal 2
+pnpm dev
 ```
 
-visit `localhost:8000`
+Visit `localhost:8000`; the extension hot-reloads from `http://localhost:5174`.
+
+## Development users
+
+The backend seeds these accounts the first time it starts against an empty meta
+database (`data/coasti_planner.sqlite`). The password is always the username;
+they exist to exercise roles and cell permissions and must not be used outside
+local development.
+
+| Username     | Password     | Roles                             |
+| ------------ | ------------ | --------------------------------- |
+| `admin`      | `admin`      | `admin` (framework), `controller` |
+| `bearbeiter` | `bearbeiter` | `bearbeiter`                      |
+| `politiker`  | `politiker`  | `politiker`                       |
+
+The `bearbeiter`, `controller`, and `politiker` roles belong to this example
+extension and are used by `tables/dummy_table.py`: a user may edit a `betrag` or
+`is_active` cell only when the row's `can_edit_roles` column contains one of
+their roles and the row is in `draft` status. The framework-owned `admin` role
+stays internal and is not exposed to extensions.
+
+Seeding only runs while the users table is empty. Delete the meta database (or
+its Docker volume) to seed again. The accounts are hardcoded in the framework's
+`coasti_planner/db/seed.py` until user management exists.
