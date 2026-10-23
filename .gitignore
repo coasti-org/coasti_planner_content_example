@@ -12,6 +12,7 @@ htmlcov/
 coverage.xml
 dist/
 build/
+coasti_planner.sqlite*
 
 # Environment / secrets
 .env
