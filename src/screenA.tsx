@@ -3,6 +3,7 @@ import {
   DataFilter,
   DataTable,
   PersistButton,
+  ResetButton,
 } from "@coasti/planner-ui/components";
 
 export function ScreenA() {
@@ -18,6 +19,7 @@ export function ScreenA() {
       <p>SQLite Table</p>
       <DataTable filterIds={["dummy_filter"]} sourceSqlId="dummy_table" />
       <PersistButton tableId="dummy_table" />
+      <ResetButton tableId="dummy_table" />
     </>
   );
 }
