@@ -16,10 +16,11 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/* \
     && npm install --global pnpm@11.27.0
 
-# The latest framework release bundles both the production and the development
-# (assets-dev) SPA builds, so the image can serve either mode.
+# Pinned to the framework version this extension targets. The release bundles
+# both the production and the development (assets-dev) SPA builds, so the image
+# can serve either mode.
 RUN uv python install 3.13 \
-    && uv tool install coasti-planner --python 3.13
+    && uv tool install coasti-planner==0.2.2 --python 3.13
 
 COPY --chmod=755 docker/entrypoint.prod.sh docker/entrypoint.dev.sh /
 

@@ -1,6 +1,11 @@
 #!/bin/sh
 set -eu
 
+# The container has no TTY. Running pnpm in CI mode lets it replace an
+# incompatible persisted node_modules volume instead of aborting, and covers
+# the implicit install that `pnpm build` triggers.
+export CI=true
+
 registry_token_file=/run/secrets/registry_ro_token
 registry_token_key="//git.linkfish.eu/api/packages/coasti/npm/:_authToken"
 

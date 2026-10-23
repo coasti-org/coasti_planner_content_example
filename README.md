@@ -39,12 +39,17 @@ models, and the frontend hot-reloads from the Vite server on port `5174`.
 
 **Notes**
 
-- The image installs Node, pnpm, uv, and the latest `coasti-planner` release,
-  which bundles both the production and the development framework assets.
+- The image installs Node, pnpm, uv, and the pinned `coasti-planner` 0.2.2
+  release, which bundles both the production and the development framework
+  assets.
 - Compose mounts this repository at `/app` and keeps `node_modules` and the pnpm
   store in Docker volumes.
 - Rebuild the image after changing `docker/entrypoint.prod.sh` or
   `docker/entrypoint.dev.sh`.
+- If pnpm reports an incompatible `node_modules` volume (for example
+  `ERR_PNPM_ABORTED_REMOVE_MODULES_DIR_NO_TTY`), the entrypoints recover by
+  purging it automatically. To start from a clean slate instead, remove the
+  volumes with `docker compose -f docker/docker-compose.prod.yaml down -v`.
 
 ## Run on Host
 
@@ -106,3 +111,26 @@ pnpm dev
 ```
 
 Visit `localhost:8000`; the extension hot-reloads from `http://localhost:5174`.
+
+## Development users
+
+The backend seeds these accounts the first time it starts against an empty meta
+database (`data/coasti_planner.sqlite`). The password is always the username;
+they exist to exercise roles and cell permissions and must not be used outside
+local development.
+
+| Username     | Password     | Roles                             |
+| ------------ | ------------ | --------------------------------- |
+| `admin`      | `admin`      | `admin` (framework), `controller` |
+| `bearbeiter` | `bearbeiter` | `bearbeiter`                      |
+| `politiker`  | `politiker`  | `politiker`                       |
+
+The `bearbeiter`, `controller`, and `politiker` roles belong to this example
+extension and are used by `tables/dummy_table.py`: a user may edit a `betrag` or
+`is_active` cell only when the row's `can_edit_roles` column contains one of
+their roles and the row is in `draft` status. The framework-owned `admin` role
+stays internal and is not exposed to extensions.
+
+Seeding only runs while the users table is empty. Delete the meta database (or
+its Docker volume) to seed again. The accounts are hardcoded in the framework's
+`coasti_planner/db/seed.py` until user management exists.
