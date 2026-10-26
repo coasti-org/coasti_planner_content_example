@@ -8,6 +8,7 @@ from coasti_planner.extensions.models import (
     Column,
     ColumnDType,
     ColumnStyle,
+    Sql,
     Table,
 )
 
@@ -53,7 +54,7 @@ dummy_table = Table(
     id="dummy_table",
     name="My Awesome Filter",
     description="My Awesome Filter Description",
-    sql=Path("./dummy_table.sql"),
+    sql=Sql(_file=Path("./dummy_table.sql")),
     can_access=can_access,
     columns=[
         Column(

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from coasti_planner.extensions.models.filter import SQLFilter
+from coasti_planner.extensions.models import SQLFilter, Sql
 
 
 dummy_filter = SQLFilter(
@@ -8,5 +8,5 @@ dummy_filter = SQLFilter(
     name="Amt",
     description="Filter by Amt",
     target_column="amt",
-    sql="SELECT DISTINCT amt FROM dummy_table ORDER BY amt",
+    sql=Sql(_inline="SELECT DISTINCT amt FROM dummy_table ORDER BY amt"),
 )
