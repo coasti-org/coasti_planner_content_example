@@ -13,7 +13,7 @@ sql_action = SqlAction(
     id="dummy_sql_action",
     name="Update the dummy table",
     description="Randomize the status of the first dummy-table row.",
-    sql_file=Path("./dummy_sql_action.sql"),
+    sql=Path("./dummy_sql_action.sql"),
 )
 another_notification_action = NotificationAction(
     id="another_notification",
