@@ -4,6 +4,7 @@ import { AgreementScreen } from "./agreementScreen";
 import { ApplicationScreen } from "./applicationScreen";
 import { HomePage } from "./homePage";
 import { LandingPageCard } from "./landingPageCard";
+import { OutletScreen } from "./outletScreen";
 import { ScreenA } from "./screenA";
 
 export function activate(context: ExtensionRuntimeContract): void {
@@ -18,4 +19,5 @@ export function activate(context: ExtensionRuntimeContract): void {
     id: "agreement",
     name: "Agreement",
   });
+  context.add_screen(OutletScreen, { id: "outlets", name: "Outlets" });
 }
