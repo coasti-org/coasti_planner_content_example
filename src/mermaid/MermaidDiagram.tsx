@@ -3,36 +3,34 @@ import { useEffect, useId, useMemo, useRef, useState } from "react";
 
 import { useExtension, useScreenNavigation } from "@coasti/planner-ui/contexts";
 
-/** Visual state of one node in a process diagram. */
+/**
+ * Visual state of one node in a process diagram.
+ *
+ * The four states are an example convention, not a framework concept:
+ *
+ * - `done`: the process already passed this node
+ * - `current`: the process is at this node
+ * - `upcoming`: the process has not reached this node yet
+ * - `blocked`: the node cannot be reached, for example a rejected branch
+ *
+ * The state only changes how a node is coloured; it never changes the chart
+ * itself. Deriving the state of every node from the overall process state is
+ * up to the extension, see `processDiagram.tsx` for an example.
+ */
 export type DiagramNodeState = "done" | "current" | "upcoming" | "blocked";
 
 export interface MermaidDiagramProps {
   /** Mermaid source, for example a `flowchart` or `swimlane-beta` diagram. */
   chart: string;
 
-  /**
-   * Node ids on the happy path in order. Together with `current` this is
-   * enough to colour the passed, current and upcoming nodes.
-   */
-  steps?: readonly string[];
-
-  /** Node id the process is currently at. */
-  current?: string;
-
-  /**
-   * Explicit state per node id. Wins over the state derived from
-   * `steps`/`current`.
-   */
+  /** State per node id. Nodes without an entry keep the chart's own style. */
   nodeStates?: Readonly<Record<string, DiagramNodeState>>;
 
   /**
-   * Screen id per node id. A node with a screen becomes a link to that
-   * extension screen.
+   * Screen id per node id. A node with an entry becomes a link to that
+   * extension screen; nodes without one stay plain.
    */
-  nodeScreens?: Readonly<Record<string, string>>;
-
-  /** Accessible label for the diagram. */
-  ariaLabel?: string;
+  nodeScreenLinks?: Readonly<Record<string, string>>;
 
   /** Extra class for the wrapper element. */
   className?: string;
@@ -85,34 +83,6 @@ interface NodeLink {
 const diagramStyle = { overflowX: "auto", width: "100%" } as const;
 const errorStyle = { color: "#c62828", margin: "4px 0 0" } as const;
 
-/** Chooses the state of every node from the ordered path and explicit map. */
-function resolveStates(
-  steps: readonly string[] | undefined,
-  current: string | undefined,
-  nodeStates: Readonly<Record<string, DiagramNodeState>> | undefined,
-): Map<string, DiagramNodeState> {
-  const states = new Map<string, DiagramNodeState>();
-  if (steps !== undefined && current !== undefined) {
-    const activeIndex = steps.indexOf(current);
-    if (activeIndex !== -1) {
-      steps.forEach((nodeId, index) => {
-        if (index < activeIndex) {
-          states.set(nodeId, "done");
-        } else if (index === activeIndex) {
-          states.set(nodeId, "current");
-        } else {
-          states.set(nodeId, "upcoming");
-        }
-      });
-    }
-  }
-
-  for (const [nodeId, state] of Object.entries(nodeStates ?? {})) {
-    states.set(nodeId, state);
-  }
-  return states;
-}
-
 function classDefLine(state: DiagramNodeState, colors: NodeColors): string {
   const width = state === "current" ? "3px" : "2px";
   const dash = state === "upcoming" ? ",stroke-dasharray:5 5" : "";
@@ -131,14 +101,14 @@ function mermaidString(value: string): string {
 /** Appends the state classes and screen links to the authored chart. */
 function buildSource(
   chart: string,
-  states: Map<string, DiagramNodeState>,
+  nodeStates: Readonly<Record<string, DiagramNodeState>> | undefined,
   colors: DiagramColors,
   links: readonly NodeLink[],
 ): string {
   const lines = [chart.trimEnd()];
 
   const byState = new Map<DiagramNodeState, string[]>();
-  for (const [nodeId, state] of states) {
+  for (const [nodeId, state] of Object.entries(nodeStates ?? {})) {
     const nodeIds = byState.get(state) ?? [];
     nodeIds.push(nodeId);
     byState.set(state, nodeIds);
@@ -178,24 +148,20 @@ function isDarkColor(color: string): boolean {
 }
 
 /**
- * Renders a Mermaid diagram offline.
+ * Renders a Mermaid diagram offline and follows the host light/dark theme.
  *
- * Nodes listed in `nodeScreens` link to extension screens using the host
- * router, and `steps`/`current` colour the passed, current and upcoming parts
- * of the process without touching the authored chart.
+ * Nodes listed in `nodeScreenLinks` open an extension screen, and `nodeStates`
+ * colours the nodes without touching the authored chart.
  */
 export function MermaidDiagram({
-  ariaLabel = "Process overview",
   chart,
   className,
-  current,
-  nodeScreens,
+  nodeScreenLinks,
   nodeStates,
-  steps,
 }: MermaidDiagramProps) {
   const { token } = theme.useToken();
   const navigateToScreen = useScreenNavigation();
-  const runtime = useExtension();
+  const extension = useExtension();
   const containerRef = useRef<HTMLDivElement>(null);
   const renderCountRef = useRef(0);
   const [error, setError] = useState<string | null>(null);
@@ -208,32 +174,34 @@ export function MermaidDiagram({
   const isDark = isDarkColor(token.colorBgContainer);
   const colors = colorsByTheme[isDark ? "dark" : "light"];
 
+  // Mermaid cannot render React links, so `buildSource` turns these into
+  // `click` directives. The same URLs are reused by the click handler below to
+  // map a clicked anchor back to its screen.
   const links = useMemo<NodeLink[]>(() => {
-    if (nodeScreens === undefined) {
+    if (nodeScreenLinks === undefined) {
       return [];
     }
-    return Object.entries(nodeScreens).map(([nodeId, screenId]) => {
-      const screen = runtime.screens.get(screenId);
+    return Object.entries(nodeScreenLinks).map(([nodeId, screenId]) => {
+      const screen = extension.screens.get(screenId);
       return {
         nodeId,
         screenId,
-        url: runtime.screen_url(screenId),
+        url: extension.screen_url(screenId),
         tooltip: `Open ${screen?.name ?? screenId}`,
       };
     });
-  }, [nodeScreens, runtime]);
+  }, [nodeScreenLinks, extension]);
 
   const source = useMemo(
-    () =>
-      buildSource(
-        chart,
-        resolveStates(steps, current, nodeStates),
-        colors,
-        links,
-      ),
-    [chart, steps, current, nodeStates, colors, links],
+    () => buildSource(chart, nodeStates, colors, links),
+    [chart, nodeStates, colors, links],
   );
 
+  // Draws the authored chart plus the injected state classes and click
+  // directives into the container. Mermaid is imported on demand so it stays
+  // out of the initial bundle, and a render that finishes after the source
+  // changed or the component unmounted is discarded instead of overwriting the
+  // container.
   useEffect(() => {
     const element = containerRef.current;
     let active = true;
@@ -253,7 +221,7 @@ export function MermaidDiagram({
           mermaid.initialize({
             startOnLoad: false,
             // The extension author writes the chart, and `click` links are
-            // only added from the trusted `nodeScreens` map.
+            // only added from the trusted `nodeScreenLinks` map.
             securityLevel: "loose",
             theme: "base",
             themeVariables: {
@@ -291,6 +259,9 @@ export function MermaidDiagram({
     token.fontFamily,
   ]);
 
+  // Mermaid emits a plain anchor for every linked node, which would reload the
+  // page. Intercept those clicks and open the screen through the host router,
+  // while keeping the anchor itself intact for middle-click and accessibility.
   useEffect(() => {
     const element = containerRef.current;
     const screenByUrl = new Map(links.map((link) => [link.url, link.screenId]));
@@ -316,7 +287,11 @@ export function MermaidDiagram({
   }, [links, navigateToScreen]);
 
   return (
-    <figure aria-label={ariaLabel} className={className} style={diagramStyle}>
+    <figure
+      aria-label="Process overview"
+      className={className}
+      style={diagramStyle}
+    >
       <div ref={containerRef} />
       {error !== null && (
         <p role="alert" style={errorStyle}>
