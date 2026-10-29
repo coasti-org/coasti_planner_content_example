@@ -36,41 +36,66 @@ export interface MermaidDiagramProps {
   className?: string;
 }
 
-interface NodeColors {
-  fill: string;
-  stroke: string;
-  color: string;
-}
-
-interface DiagramColors {
-  done: NodeColors;
-  current: NodeColors;
-  upcoming: NodeColors;
-  blocked: NodeColors;
-}
-
-// Mermaid cannot parse `rgba(...)` inside `classDef` because commas separate
-// the properties, so the state colours are fixed hex values per theme.
-const colorsByTheme: Record<"light" | "dark", DiagramColors> = {
-  light: {
-    done: { fill: "#e6f4ea", stroke: "#2e7d32", color: "#1b5e20" },
-    current: { fill: "#eaf5b8", stroke: "#4f6a0a", color: "#1f2a00" },
-    upcoming: { fill: "#f5f5f5", stroke: "#9e9e9e", color: "#616161" },
-    blocked: { fill: "#fdecea", stroke: "#c62828", color: "#8e0000" },
-  },
-  dark: {
-    done: { fill: "#14351f", stroke: "#59e98f", color: "#d7ffe6" },
-    current: { fill: "#3a4408", stroke: "#d8ec29", color: "#f4ffc2" },
-    upcoming: { fill: "#123441", stroke: "#4b7c8c", color: "#b7c9cf" },
-    blocked: { fill: "#3a1b1d", stroke: "#ff7d80", color: "#ffd9da" },
-  },
-};
+type AntDesignTokens = ReturnType<typeof theme.useToken>["token"];
 
 const stateClassNames: Record<DiagramNodeState, string> = {
   done: "cpfwDone",
   current: "cpfwCurrent",
   upcoming: "cpfwUpcoming",
   blocked: "cpfwBlocked",
+};
+
+/**
+ * Antd hands out `rgba(...)` for some tokens, but Mermaid splits `classDef`
+ * properties on commas, so functional colours are normalised to `#rrggbbaa`.
+ */
+function toMermaidColor(value: string): string {
+  const functional = value.match(/^rgba?\(([^)]+)\)$/i);
+  const parts = functional?.[1]?.split(/[\s,/]+/);
+  if (parts === undefined) {
+    return value;
+  }
+  const [red, green, blue, alpha] = parts.map(Number);
+  if (!isColorChannel(red) || !isColorChannel(green) || !isColorChannel(blue)) {
+    return value;
+  }
+  const opacity = isColorChannel(alpha) ? alpha : 1;
+  return `#${toHex(red)}${toHex(green)}${toHex(blue)}${toHex(opacity * 255)}`;
+}
+
+function isColorChannel(value: number | undefined): value is number {
+  return value !== undefined && !Number.isNaN(value);
+}
+
+function toHex(value: number): string {
+  return Math.round(value).toString(16).padStart(2, "0");
+}
+
+/** Theme-derived node styling, kept subtle so the active step stands out. */
+const stateStyles: Record<
+  DiagramNodeState,
+  (token: AntDesignTokens) => string
+> = {
+  // Passed steps keep an accent outline, enough to read the path without
+  // competing with the active step.
+  done: (token) =>
+    `fill:transparent,stroke:${toMermaidColor(token.colorPrimaryBorder)},` +
+    `color:${toMermaidColor(token.colorTextSecondary)},stroke-width:2px`,
+  // The active step is the only solid, opaque node, marked by the accent
+  // border rather than a loud accent fill.
+  current: (token) =>
+    `fill:${toMermaidColor(token.colorBgContainer)},` +
+    `stroke:${toMermaidColor(token.colorPrimary)},` +
+    `color:${toMermaidColor(token.colorText)},stroke-width:2px`,
+  // Locked steps stay faint and dashed.
+  upcoming: (token) =>
+    `fill:transparent,stroke:${toMermaidColor(token.colorBorder)},` +
+    `color:${toMermaidColor(token.colorTextTertiary)},stroke-width:1px,` +
+    `stroke-dasharray:4 4`,
+  blocked: (token) =>
+    `fill:transparent,stroke:${toMermaidColor(token.colorErrorBorder)},` +
+    `color:${toMermaidColor(token.colorTextTertiary)},stroke-width:1px,` +
+    `stroke-dasharray:4 4`,
 };
 
 interface NodeLink {
@@ -81,16 +106,9 @@ interface NodeLink {
 }
 
 const diagramStyle = { overflowX: "auto", width: "100%" } as const;
-const errorStyle = { color: "#c62828", margin: "4px 0 0" } as const;
 
-function classDefLine(state: DiagramNodeState, colors: NodeColors): string {
-  const width = state === "current" ? "3px" : "2px";
-  const dash = state === "upcoming" ? ",stroke-dasharray:5 5" : "";
-  return (
-    `classDef ${stateClassNames[state]} ` +
-    `fill:${colors.fill},stroke:${colors.stroke},` +
-    `color:${colors.color},stroke-width:${width}${dash}`
-  );
+function classDefLine(state: DiagramNodeState, token: AntDesignTokens): string {
+  return `classDef ${stateClassNames[state]} ${stateStyles[state](token)}`;
 }
 
 /** Mermaid string literal: double quotes, with embedded quotes flattened. */
@@ -102,7 +120,7 @@ function mermaidString(value: string): string {
 function buildSource(
   chart: string,
   nodeStates: Readonly<Record<string, DiagramNodeState>> | undefined,
-  colors: DiagramColors,
+  token: AntDesignTokens,
   links: readonly NodeLink[],
 ): string {
   const lines = [chart.trimEnd()];
@@ -115,7 +133,7 @@ function buildSource(
   }
 
   for (const state of Object.keys(stateClassNames) as DiagramNodeState[]) {
-    lines.push(classDefLine(state, colors[state]));
+    lines.push(classDefLine(state, token));
     const nodeIds = byState.get(state);
     if (nodeIds !== undefined && nodeIds.length > 0) {
       lines.push(`class ${nodeIds.join(",")} ${stateClassNames[state]}`);
@@ -131,20 +149,6 @@ function buildSource(
   }
 
   return lines.join("\n");
-}
-
-/** Whether a CSS colour is dark, used to pick the diagram theme. */
-function isDarkColor(color: string): boolean {
-  const hex = color.match(/^#([\da-f]{6})$/i);
-  if (hex?.[1] === undefined) {
-    // Unknown formats (for example a named colour) are treated as light.
-    return false;
-  }
-  const value = Number.parseInt(hex[1], 16);
-  const red = (value >> 16) & 0xff;
-  const green = (value >> 8) & 0xff;
-  const blue = value & 0xff;
-  return (red * 299 + green * 587 + blue * 114) / 1000 < 128;
 }
 
 /**
@@ -171,9 +175,6 @@ export function MermaidDiagram({
     [reactId],
   );
 
-  const isDark = isDarkColor(token.colorBgContainer);
-  const colors = colorsByTheme[isDark ? "dark" : "light"];
-
   // Mermaid cannot render React links, so `buildSource` turns these into
   // `click` directives. The same URLs are reused by the click handler below to
   // map a clicked anchor back to its screen.
@@ -193,8 +194,8 @@ export function MermaidDiagram({
   }, [nodeScreenLinks, extension]);
 
   const source = useMemo(
-    () => buildSource(chart, nodeStates, colors, links),
-    [chart, nodeStates, colors, links],
+    () => buildSource(chart, nodeStates, token, links),
+    [chart, nodeStates, token, links],
   );
 
   // Draws the authored chart plus the injected state classes and click
@@ -231,8 +232,16 @@ export function MermaidDiagram({
               primaryBorderColor: token.colorBorder,
               lineColor: token.colorBorder,
               textColor: token.colorText,
+              // Neutralise Mermaid's derived palette, which otherwise paints
+              // swimlane titles in rotated hues (tertiaryColor is primaryColor
+              // rotated 180 degrees, i.e. a red lane background).
+              secondaryColor: token.colorBgContainer,
+              tertiaryColor: token.colorBgContainer,
+              clusterBkg: token.colorFillQuaternary,
+              clusterBorder: token.colorBorder,
+              dropShadow: "none",
               fontFamily: token.fontFamily,
-              fontSize: "14px",
+              fontSize: `${token.fontSize}px`,
             },
           });
           const { svg } = await mermaid.render(diagramId, source);
@@ -256,7 +265,9 @@ export function MermaidDiagram({
     token.colorBgContainer,
     token.colorBorder,
     token.colorText,
+    token.colorFillQuaternary,
     token.fontFamily,
+    token.fontSize,
   ]);
 
   // Mermaid emits a plain anchor for every linked node, which would reload the
@@ -294,7 +305,7 @@ export function MermaidDiagram({
     >
       <div ref={containerRef} />
       {error !== null && (
-        <p role="alert" style={errorStyle}>
+        <p role="alert" style={{ color: token.colorError, margin: "4px 0 0" }}>
           Diagram could not be rendered: {error}
         </p>
       )}
