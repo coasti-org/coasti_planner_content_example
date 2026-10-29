@@ -1,8 +1,10 @@
 import { Segmented, Typography } from "antd";
 import { useState } from "react";
 
-import { MermaidDiagram, ScreenLink } from "@coasti/planner-ui/components";
+import { ScreenLink } from "@coasti/planner-ui/components";
 import { useExtension } from "@coasti/planner-ui/contexts";
+
+import { MermaidDiagram } from "./MermaidDiagram";
 
 /** Steps of the example process, in the order of the happy path. */
 const steps = [
