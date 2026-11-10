@@ -8,7 +8,8 @@ Python models in `tables/`, `filters/`, `actions/`, and `outlets/`.
 The recommended setup is the VS Code dev container.
 
 1. Install Docker and the VS Code Dev Containers extension.
-2. Set `REGISTRY_RO_TOKEN` in the host environment; see
+2. Copy `.devcontainer/.env.example` to `.devcontainer/.env` and fill in the
+   read-only registry token; see
    [`docker/README.md`](docker/README.md#prerequisites).
 3. Open [`content_example.code-workspace`](content_example.code-workspace) and
    run **Dev Containers: Open Workspace in Container...**.
@@ -37,9 +38,11 @@ same editor settings; it points the Python interpreter at `.venv`.
 
 Install node >= 24 and pnpm >= 11. A read-only registry token is required until
 the `@coasti` packages are public; see
-[`docker/README.md`](docker/README.md#prerequisites).
+[`docker/README.md`](docker/README.md#prerequisites). Export it before
+installing:
 
 ```bash
+export REGISTRY_RO_TOKEN="$(sed -n 's/^REGISTRY_RO_TOKEN=//p' .devcontainer/.env | tail -n 1)"
 pnpm config set "//git.linkfish.eu/api/packages/coasti/npm/:_authToken" "$REGISTRY_RO_TOKEN"
 pnpm install
 ```

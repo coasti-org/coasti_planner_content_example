@@ -17,28 +17,30 @@ are documented in the root [`README.md`](../README.md).
 
 - Docker (Docker Desktop or a compatible engine).
 - VS Code with the Dev Containers extension (for the dev container).
-- A read-only Coasti npm-registry token in `REGISTRY_RO_TOKEN` until the
-  `@coasti` packages are fully public. Set it in the **host** environment before
-  starting VS Code:
+- A read-only Coasti npm-registry token until the `@coasti` packages are fully
+  public. Put it in the gitignored `.devcontainer/.env`:
 
 ```bash
-# bash
-export REGISTRY_RO_TOKEN="<read-only token>"
-
-# powershell
-$env:REGISTRY_RO_TOKEN = "<read-only token>"
+cp .devcontainer/.env.example .devcontainer/.env
+$EDITOR .devcontainer/.env
 ```
+
+Exporting `REGISTRY_RO_TOKEN` in the host environment also works; a filled
+`.env` value wins.
 
 ## Dev container (recommended)
 
 Open [`../content_example.code-workspace`](../content_example.code-workspace) in
-VS Code, then run **Dev Containers: Open Workspace in Container...**. Set
-`REGISTRY_RO_TOKEN` first (see [Prerequisites](#prerequisites)). The workspace
-file carries the shared editor settings; the container adds the interpreter
-paths and extensions. The first start builds the `dev` stage and installs
-dependencies into Docker volumes; this takes a few minutes. The post-create
-script also copies `config.dev.example.yml` to `config.dev.yml` when it is
-missing.
+VS Code, then run **Dev Containers: Open Workspace in Container...**. Set the
+token in [`.devcontainer/.env`](#prerequisites) first. The workspace file
+carries the shared editor settings; the container adds the interpreter paths and
+extensions. The first start builds the `dev` stage and installs dependencies
+into Docker volumes; this takes a few minutes. The post-create script also
+copies `config.dev.example.yml` to `config.dev.yml` when it is missing.
+
+If post-create already failed because the token was missing, create
+`.devcontainer/.env` and run `bash .devcontainer/post-create.sh` in a container
+terminal; no rebuild is needed.
 
 Use two integrated terminals, or the `dev:backend` / `dev:extension` tasks:
 
@@ -75,17 +77,16 @@ container. Use the Docker command below when the app must be reachable from a
 host browser; the Dev Containers CLI runs the same lifecycle but does not
 publish ports.
 
-Run these from the extension root:
+Create `.devcontainer/.env` as described in [Prerequisites](#prerequisites),
+then run these from the extension root:
 
 ```bash
-export REGISTRY_RO_TOKEN="<read-only token>"
-
 docker build --target dev -f docker/Dockerfile -t coasti-content-example-dev .
 
 docker run --rm -it --init --name coasti-content-example-dev \
   --user node \
   -w /workspaces/content_example \
-  -e REGISTRY_RO_TOKEN \
+  --env-file .devcontainer/.env \
   -v "$PWD:/workspaces/content_example" \
   -v content_example-node-modules:/workspaces/content_example/node_modules \
   -v coasti-pnpm-store:/pnpm-store \
@@ -113,10 +114,12 @@ removes the container, while the named volumes persist.
 
 **Notes**
 
-- The command mirrors the mounts, volumes, user, environment, and ports from
-  `.devcontainer/devcontainer.json`; keep them in sync.
-- `post-create.sh` installs dependencies into the workspace volume and writes
-  `config.dev.yml`. Run it once per new container.
+- The command mirrors the mounts, volumes, user, and ports from
+  `.devcontainer/devcontainer.json`; keep them in sync. The token comes from
+  `--env-file .devcontainer/.env`.
+- `post-create.sh` loads the token from `.devcontainer/.env`, installs
+  dependencies into the workspace volume, and writes `config.dev.yml`. Run it
+  once per new container.
 - On Linux, the container runs as uid/gid 1000 (`node`). If your host UID
   differs, use the Dev Containers CLI, which remaps the UID, or adjust the mount
   ownership.
@@ -173,8 +176,8 @@ the host as a bind mount at `/workspaces/<repo>`.
 | Stage               | When                                   | What happens                                                                                                            |
 | ------------------- | -------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
 | Image build         | on create or rebuild                   | `Dockerfile` target `dev` installs the toolchain: Node, pnpm, uv, Python, pinned `coasti-planner`, git/sudo, Ruff, mypy |
-| Container creation  | once per container, also after rebuild | bind mount, named volumes, `REGISTRY_RO_TOKEN`, `init`, unprivileged remote user                                        |
-| `postCreateCommand` | once per creation or rebuild           | chown volumes, write `~/.npmrc`, `pnpm install`, `config.dev.yml`, dummy DB                                             |
+| Container creation  | once per container, also after rebuild | bind mount, named volumes, `init`, unprivileged remote user                                                             |
+| `postCreateCommand` | once per creation or rebuild           | load token, chown volumes, write pnpm auth config, `pnpm install`, `config.dev.yml`, dummy DB                           |
 | VS Code attach      | after setup                            | server and remote extensions start in the container                                                                     |
 | `postStartCommand`  | every start                            | `pnpm install --frozen-lockfile` re-sync                                                                                |
 | Terminal            | on demand                              | `coasti-planner config.dev.yml`, `pnpm dev`                                                                             |
@@ -204,8 +207,10 @@ the host as a bind mount at `/workspaces/<repo>`.
   as an unprivileged remote user (VS Code aligns its UID with the host on
   Linux), so the `dev` stage installs passwordless `sudo` and `postCreate`
   chowns the volumes.
-- **Secrets.** `REGISTRY_RO_TOKEN` enters the container at runtime; `~/.npmrc`
-  references it by variable name, so the token is not in the image or repo.
+- **Secrets.** `postCreate` reads the token from the gitignored
+  `.devcontainer/.env` (or the container environment) and stores it in pnpm's
+  user auth config with mode 0600. It is not in the image or committed to the
+  repository.
 - **Ports.** `forwardPorts` is the VS Code tunnel, not Docker port publishing.
   The browser resolves the backend's `dev_url` (`http://localhost:5174`) on the
   host, and VS Code forwards it into the container.
