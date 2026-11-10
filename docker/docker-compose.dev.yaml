@@ -4,6 +4,7 @@ services:
     build:
       context: ..
       dockerfile: docker/Dockerfile
+      target: prod
     working_dir: /app
     entrypoint: ["coasti-planner", "config.dev.example.yml"]
     ports:
@@ -16,6 +17,7 @@ services:
     build:
       context: ..
       dockerfile: docker/Dockerfile
+      target: prod
     working_dir: /app
     entrypoint: ["/entrypoint.dev.sh"]
     secrets:

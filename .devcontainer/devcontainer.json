@@ -1,0 +1,81 @@
+{
+  "name": "Coasti content extension",
+  "build": {
+    "context": "..",
+    "dockerfile": "../docker/Dockerfile",
+    "target": "dev"
+  },
+  "remoteUser": "node",
+  "init": true,
+  "containerEnv": {
+    "REGISTRY_RO_TOKEN": "${localEnv:REGISTRY_RO_TOKEN}"
+  },
+  "mounts": [
+    "source=${localWorkspaceFolderBasename}-node-modules,target=${containerWorkspaceFolder}/node_modules,type=volume",
+    "source=coasti-pnpm-store,target=/pnpm-store,type=volume"
+  ],
+  "postCreateCommand": "bash .devcontainer/post-create.sh",
+  "postStartCommand": "CI=true pnpm install --frozen-lockfile",
+  "forwardPorts": [8000, 5174],
+  "portsAttributes": {
+    "8000": {
+      "label": "Coasti Planner",
+      "onAutoForward": "notify"
+    },
+    "5174": {
+      "label": "Extension (Vite)",
+      "onAutoForward": "silent"
+    }
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "detachhead.basedpyright",
+        "ms-python.python",
+        "charliermarsh.ruff",
+        "oxc.oxc-vscode",
+        "redhat.vscode-yaml"
+      ],
+      "settings": {
+        "python.defaultInterpreterPath": "/opt/coasti/venv/bin/python",
+        "python.terminal.activateEnvironment": true,
+        "basedpyright.analysis.extraPaths": [
+          "/opt/coasti/venv/lib/python3.13/site-packages"
+        ],
+        "basedpyright.analysis.typeCheckingMode": "standard",
+        "ruff.importStrategy": "fromEnvironment",
+        "typescript.tsdk": "node_modules/typescript",
+        "typescript.enablePromptUseWorkspaceTsdk": true,
+        "oxc.configPath": ".oxlintrc.json",
+        "oxc.path.oxlint": "node_modules/.bin/oxlint",
+        "oxc.path.tsgolint": "node_modules/.bin/tsgolint",
+        "oxc.tsConfigPath": "tsconfig.json",
+        "oxc.typeAware": true,
+        "oxc.lint.run": "onSave",
+        "oxc.fixKind": "safe_fix",
+        "oxc.fmt.configPath": ".oxfmtrc.json",
+        "editor.formatOnSave": true,
+        "[python]": {
+          "editor.defaultFormatter": "charliermarsh.ruff"
+        },
+        "[typescript]": {
+          "editor.defaultFormatter": "oxc.oxc-vscode"
+        },
+        "[typescriptreact]": {
+          "editor.defaultFormatter": "oxc.oxc-vscode"
+        },
+        "editor.codeActionsOnSave": {
+          "source.fixAll.ruff": "explicit",
+          "source.organizeImports.ruff": "explicit"
+        },
+        "files.watcherExclude": {
+          "**/node_modules/**": true,
+          "**/dist/**": true,
+          "**/data/**": true,
+          "**/.mypy_cache/**": true,
+          "**/.ruff_cache/**": true
+        }
+      }
+    }
+  }
+}

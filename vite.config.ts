@@ -23,7 +23,9 @@ const manifest: ExtensionManifest = {
   id: coastiConfig.id,
   name: coastiConfig.name,
   version: coastiConfig.version,
-  description: coastiConfig.description,
+  ...(coastiConfig.description === undefined
+    ? {}
+    : { description: coastiConfig.description }),
   contractVersion: CONTRACT_VERSION,
   entry: "remoteEntry.js",
 };
@@ -33,7 +35,7 @@ function manifestPlugin(): Plugin {
     name: "coasti:extension-manifest-maker",
     // dev setup serves manifest.json via vite server middleware
     configureServer(server) {
-      server.middlewares.use("/manifest.json", (request, response) => {
+      server.middlewares.use("/manifest.json", (_request, response) => {
         response.setHeader("Content-Type", "application/json");
         response.end(JSON.stringify(manifest, null, 2));
       });
@@ -51,7 +53,9 @@ function manifestPlugin(): Plugin {
 
 export default defineConfig(({ mode }) => ({
   server: {
+    host: true,
     port: 5174,
+    strictPort: true,
   },
   plugins: [
     manifestPlugin(),
@@ -99,7 +103,12 @@ export default defineConfig(({ mode }) => ({
     }),
     // Point the refresh runtime at the host when a Vite host serves this
     // extension. Unset for a built host, which injects its own runtime.
-    react({ reactRefreshHost: loadEnv(mode, ".").VITE_DEV_HOST_URL }),
+    react(
+      (() => {
+        const devHostUrl = loadEnv(mode, ".")["VITE_DEV_HOST_URL"];
+        return devHostUrl === undefined ? {} : { reactRefreshHost: devHostUrl };
+      })(),
+    ),
   ],
   build: {
     target: "es2022",

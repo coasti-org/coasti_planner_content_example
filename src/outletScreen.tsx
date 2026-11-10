@@ -17,27 +17,29 @@ export function OutletScreen() {
       <Typography.Title level={4}>Draft rows?</Typography.Title>
       {hasDraft.isPending ? (
         <Typography.Text type="secondary">Loading…</Typography.Text>
-      ) : hasDraft.error !== null ? (
+      ) : hasDraft.error === null ? (
+        <Typography.Text>
+          {hasDraft.data === true ? "Yes" : "No"}
+        </Typography.Text>
+      ) : (
         <Typography.Text type="danger">
           Could not load the value.
         </Typography.Text>
-      ) : (
-        <Typography.Text>{hasDraft.data ? "Yes" : "No"}</Typography.Text>
       )}
 
       <Typography.Title level={4}>Amts</Typography.Title>
       {amts.isPending ? (
         <Typography.Text type="secondary">Loading…</Typography.Text>
-      ) : amts.error !== null ? (
-        <Typography.Text type="danger">
-          Could not load the values.
-        </Typography.Text>
-      ) : (
+      ) : amts.error === null ? (
         <Space size={[0, 8]} wrap>
           {amts.data?.map((amt) => (
             <Tag key={amt}>{amt}</Tag>
           ))}
         </Space>
+      ) : (
+        <Typography.Text type="danger">
+          Could not load the values.
+        </Typography.Text>
       )}
     </section>
   );

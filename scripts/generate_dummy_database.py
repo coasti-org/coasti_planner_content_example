@@ -5,7 +5,6 @@ import sqlite3
 from datetime import date, timedelta
 from pathlib import Path
 
-
 KREIS_VALUES = ("Kreis Nord", "Kreis Süd", "Kreis Ost", "Kreis West", "Kreis Mitte")
 AMT_VALUES = (
     "Bauamt",
@@ -58,9 +57,17 @@ def sql_literal(value: str | float | int) -> str:
     return f"{value:.2f}"
 
 
-def build_sql(rows: list[tuple[int, str, str, str, str, float, str, int, str, str]]) -> str:
+def build_sql(
+    rows: list[tuple[int, str, str, str, str, float, str, int, str, str]],
+) -> str:
     values = ",\n".join(
         "    (" + ", ".join(sql_literal(value) for value in row) + ")" for row in rows
+    )
+    insert_columns = " ".join(
+        (
+            "kreis, amt, haushaltstelle, konto, betrag, datum,",
+            "is_active, can_edit_roles, status",
+        )
     )
     return "\n".join(
         (
@@ -82,7 +89,7 @@ def build_sql(rows: list[tuple[int, str, str, str, str, float, str, int, str, st
             "    status TEXT NOT NULL CHECK (status IN ('draft', 'locked', 'done'))",
             ");",
             "",
-            "INSERT INTO dummy_table (row_id, kreis, amt, haushaltstelle, konto, betrag, datum, is_active, can_edit_roles, status) VALUES",
+            f"INSERT INTO dummy_table (row_id, {insert_columns}) VALUES",
             values + ";",
             "",
             "-- Single-row workflow state read by the current_stage outlet and written",

@@ -1,0 +1,27 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "check",
+      "type": "shell",
+      "command": "pnpm check",
+      "group": {
+        "kind": "test",
+        "isDefault": true
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "dev:backend",
+      "type": "shell",
+      "command": "coasti-planner config.dev.yml",
+      "problemMatcher": []
+    },
+    {
+      "label": "dev:extension",
+      "type": "shell",
+      "command": "pnpm dev",
+      "problemMatcher": []
+    }
+  ]
+}

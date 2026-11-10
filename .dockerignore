@@ -1,5 +1,11 @@
 **/node_modules
 **/dist
+**/.venv
+**/.pnpm-store
+**/.mypy_cache
+**/.ruff_cache
+**/*.log
+**/*.sqlite
 .git
 .env
 .env.*

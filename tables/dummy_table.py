@@ -21,8 +21,7 @@ def can_access(
     column: str,
     row: dict[str, object],
 ) -> CellAccess:
-    """
-    Return whether a user can read and/or write one cell in a table.
+    """Return whether a user can read and/or write one cell in a table.
 
     # Arguments
     - ``rows`` contains the data of the row (mapping column names to values)
