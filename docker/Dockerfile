@@ -49,7 +49,7 @@ ARG MYPY_VERSION=2.3.1
 RUN apt-get update \
     && apt-get install --yes --no-install-recommends git curl sudo \
     && rm -rf /var/lib/apt/lists/* \
-    && echo 'node ALL=(NOPASSWD:ALL)' > /etc/sudoers.d/node \
+    && echo 'node ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers.d/node \
     && chmod 0440 /etc/sudoers.d/node \
     && uv pip install --python /opt/coasti/venv/bin/python \
         "ruff==${RUFF_VERSION}" \
