@@ -1,0 +1,61 @@
+# Coasti uses Copier to install products.
+# For details on creating Copier templates, and the settings used here:
+# https://copier.readthedocs.io/en/stable/
+
+_min_copier_version: "9.17.0"
+
+_exclude_templates:
+  - .env
+  - .gitignore
+  - .gitattributes
+  - .gitkeep
+  - .git-blame-ignore-revs
+
+_exclude:
+  - .git
+  - .git/**
+  - .github
+  - .devcontainer
+  - .vscode
+  - .gitignore
+  - coasti.yml
+  - .copier-answers.yml
+  - coasti_install_questions.yml
+  - copier.yml
+
+---
+
+!include coasti_install_questions.yml
+
+# Updates should not overwrite existing settings.
+_skip_if_exists:
+  - .env
+
+_tasks:
+  - command: "python ./scripts/generate_dummy_database.py"
+
+_message_before_copy: |
+  ========================================
+    Installation Coasti Planner Content Extension
+  ========================================
+
+  Please answer the following questions to configure the installation:
+
+_message_after_copy: |
+  ========================================
+    Installation complete
+  ========================================
+
+  "{{ product_id }}" installed to "{{ _copier_conf.dst_path | realpath }}"
+
+  ========================================
+    Next steps
+  ========================================
+
+  - Make changes using the dev container:
+      1. Install Docker and the VS Code Dev Containers extension.
+      2. Open the workspace in the container.
+      3. Start the backend and the extension.
+
+  - To start in production:
+      docker compose -f docker/docker-compose.prod.yaml up --build

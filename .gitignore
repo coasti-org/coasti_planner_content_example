@@ -39,3 +39,7 @@ node_modules/
 # Module Federation
 @mf-types
 .mf
+
+# Copier template development files
+coasti.yml
+.copier-answers.yml
