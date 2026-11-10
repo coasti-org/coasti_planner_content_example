@@ -44,3 +44,6 @@ node_modules/
 # Copier template development files
 coasti.yml
 .copier-answers.yml
+*.code-workspace
+!{{product_id}}.code-workspace
+package.json

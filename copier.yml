@@ -17,8 +17,6 @@ _exclude:
   - .git
   - .git/**
   - .github
-  - .devcontainer
-  - .vscode
   - copier_questions.yml
   - copier.yml
 
