@@ -9,14 +9,10 @@ The recommended environment is the VS Code dev container: open this folder and
 run **Dev Containers: Reopen in Container**, then start the backend and the Vite
 dev server as described in [`docker/README.md`](docker/README.md).
 
-The compose files live there too:
+The production compose file lives there too:
 
 ```bash
-# production
 docker compose -f docker/docker-compose.prod.yaml up --build
-
-# development
-docker compose -f docker/docker-compose.dev.yaml up --build
 ```
 
 [`docker/README.md`](docker/README.md) covers the registry token, forwarded

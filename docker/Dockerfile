@@ -31,7 +31,7 @@ RUN apt-get update \
 
 FROM base AS prod
 
-COPY --chmod=755 docker/entrypoint.prod.sh docker/entrypoint.dev.sh /
+COPY --chmod=755 docker/entrypoint.prod.sh /
 
 ENTRYPOINT ["/entrypoint.prod.sh"]
 

@@ -2,7 +2,7 @@
 
 `Dockerfile` defines a shared runtime with two targets:
 
-- `prod` — the runtime used by the compose files.
+- `prod` — the runtime used by the compose file.
 - `dev` — the runtime plus git, sudo, Ruff, and mypy, used by the VS Code dev
   container.
 
@@ -67,17 +67,11 @@ rebuild the container after changing the Dockerfile or its tool version pins.
 
 ## Compose
 
-Two compose files live in this folder:
+`docker-compose.prod.yaml` builds the extension and serves the production bundle
+from the backend. Use the dev container for local development.
 
-- `docker-compose.prod.yaml` builds the extension and serves the production
-  bundle from the backend.
-- `docker-compose.dev.yaml` runs the backend with model hot reload and the
-  extension's Vite dev server.
-
-Both need the `REGISTRY_RO_TOKEN` from the prerequisites above. Run the commands
+It needs the `REGISTRY_RO_TOKEN` from the prerequisites above. Run the command
 from the extension root.
-
-### Production
 
 ```bash
 docker compose -f docker/docker-compose.prod.yaml up --build
@@ -85,18 +79,9 @@ docker compose -f docker/docker-compose.prod.yaml up --build
 
 Open `http://localhost:8000`.
 
-### Development
-
-```bash
-docker compose -f docker/docker-compose.dev.yaml up --build
-```
-
-Open `http://localhost:8000`. The backend reloads the extension's pydantic
-models, and the frontend hot-reloads from the Vite server on port `5174`.
-
 ### Notes
 
-- The compose files use the `prod` stage; the dev container uses the `dev`
+- The compose file uses the `prod` stage; the dev container uses the `dev`
   stage.
 - The image installs Node, pnpm, uv, and the pinned `coasti-planner` 0.2.2
   release, which bundles both the production and the development framework
@@ -104,9 +89,9 @@ models, and the frontend hot-reloads from the Vite server on port `5174`.
   `COASTI_VERSION` once a framework branch with unreleased changes is published.
 - Compose mounts this repository at `/app` and keeps `node_modules` and the pnpm
   store in Docker volumes.
-- Rebuild the image after changing `entrypoint.prod.sh` or `entrypoint.dev.sh`.
+- Rebuild the image after changing `entrypoint.prod.sh`.
 - If pnpm reports an incompatible `node_modules` volume (for example
-  `ERR_PNPM_ABORTED_REMOVE_MODULES_DIR_NO_TTY`), the entrypoints recover by
+  `ERR_PNPM_ABORTED_REMOVE_MODULES_DIR_NO_TTY`), the entrypoint recovers by
   purging it automatically. To start from a clean slate instead, remove the
   volumes with `docker compose -f docker/docker-compose.prod.yaml down -v`.
 
