@@ -67,6 +67,68 @@ These are the CLI equivalents of the editor checks. The container runs
 basedpyright, Ruff, Oxc, and the TypeScript server against the same
 `node_modules` and `/opt/coasti/venv` interpreter.
 
+## Other editors
+
+VS Code is not required. The repository is a bind mount and the container
+provides the toolchain, so you can edit on the host and run commands in the
+container. Use the Docker command below when the app must be reachable from a
+host browser; the Dev Containers CLI runs the same lifecycle but does not
+publish ports.
+
+Run these from the extension root:
+
+```bash
+export REGISTRY_RO_TOKEN="<read-only token>"
+
+docker build --target dev -f docker/Dockerfile -t coasti-content-example-dev .
+
+docker run --rm -it --init --name coasti-content-example-dev \
+  --user node \
+  -w /workspaces/content_example \
+  -e REGISTRY_RO_TOKEN \
+  -v "$PWD:/workspaces/content_example" \
+  -v content_example-node-modules:/workspaces/content_example/node_modules \
+  -v coasti-pnpm-store:/pnpm-store \
+  -p 8000:8000 -p 5174:5174 \
+  coasti-content-example-dev bash
+```
+
+Inside the container, prepare the workspace and start the backend:
+
+```bash
+bash .devcontainer/post-create.sh
+coasti-planner config.dev.yml
+```
+
+In a second host terminal, start the extension and run the checks:
+
+```bash
+docker exec -it coasti-content-example-dev pnpm dev
+docker exec -it coasti-content-example-dev pnpm check
+```
+
+Open `http://localhost:8000`. Edits on the host are visible through the bind
+mount. Stop the stack with `docker stop coasti-content-example-dev`; `--rm`
+removes the container, while the named volumes persist.
+
+**Notes**
+
+- The command mirrors the mounts, volumes, user, environment, and ports from
+  `.devcontainer/devcontainer.json`; keep them in sync.
+- `post-create.sh` installs dependencies into the workspace volume and writes
+  `config.dev.yml`. Run it once per new container.
+- On Linux, the container runs as uid/gid 1000 (`node`). If your host UID
+  differs, use the Dev Containers CLI, which remaps the UID, or adjust the mount
+  ownership.
+- On Windows, run the commands from WSL2.
+- The Dev Containers CLI is the canonical non-VS Code lifecycle runner:
+  `npx @devcontainers/cli up --workspace-folder .` and
+  `npx @devcontainers/cli exec --workspace-folder . bash`. It does not publish
+  ports, so use the Docker command above for a host browser.
+- Editor LSP and linter integration is editor-specific. The container provides
+  the binaries; run `pnpm check` inside it or configure the editor to invoke
+  `docker exec`.
+
 ## Compose
 
 `docker-compose.prod.yaml` builds the extension and serves the production bundle
