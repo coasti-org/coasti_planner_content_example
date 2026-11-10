@@ -107,6 +107,9 @@ interface NodeLink {
 
 const diagramStyle = { overflowX: "auto", width: "100%" } as const;
 
+// Mermaid renders SVG anchors with the legacy namespace attribute.
+const XLINK_NAMESPACE = "http://www.w3.org/1999/xlink";
+
 function classDefLine(state: DiagramNodeState, token: AntDesignTokens): string {
   return `classDef ${stateClassNames[state]} ${stateStyles[state](token)}`;
 }
@@ -277,13 +280,23 @@ export function MermaidDiagram({
     const element = containerRef.current;
     const screenByUrl = new Map(links.map((link) => [link.url, link.screenId]));
     const onClick = (event: MouseEvent) => {
+      // Leave modified clicks to the browser so open-in-new-tab still works.
+      if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
+        return;
+      }
       const target = event.target;
       if (!(target instanceof Element)) {
         return;
       }
-      const href = target.closest("a")?.getAttribute("href");
-      const screenId =
-        href === null || href === undefined ? undefined : screenByUrl.get(href);
+      const anchor = target.closest("a");
+      if (anchor === null) {
+        return;
+      }
+      // Mermaid writes the destination to the legacy `xlink:href` attribute.
+      const href =
+        anchor.getAttribute("href") ??
+        anchor.getAttributeNS(XLINK_NAMESPACE, "href");
+      const screenId = href === null ? undefined : screenByUrl.get(href);
       if (screenId === undefined) {
         return;
       }
