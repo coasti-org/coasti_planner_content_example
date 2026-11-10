@@ -71,6 +71,9 @@ pnpm check:py     # ruff + mypy
 pnpm format:check # oxfmt
 ```
 
+`pnpm fix` applies the automatic fixes from Oxlint, Oxfmt, and Ruff; type errors
+still need manual changes.
+
 These are the CLI equivalents of the editor checks. The container runs
 basedpyright, Ruff, Oxc, and the TypeScript server against the same
 `node_modules` and `/opt/coasti/venv` interpreter.

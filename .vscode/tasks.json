@@ -12,6 +12,12 @@
       "problemMatcher": []
     },
     {
+      "label": "fix",
+      "type": "shell",
+      "command": "pnpm fix",
+      "problemMatcher": []
+    },
+    {
       "label": "dev:backend",
       "type": "shell",
       "command": "coasti-planner config.dev.yml",
