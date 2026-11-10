@@ -30,4 +30,12 @@ product_description:
 version:
   type: str
   help: "Version (SemVer)"
-  default: "0.1"
+  default: "0.1.0"
+
+registry_ro_token:
+  type: str
+  help: "Read-only token for the @coasti npm registry (only needed in current dev phase)"
+  default: ""
+  placeholder: "ghp_..."
+  secret: true
+  validator: "{% if not registry_ro_token %}registry_ro_token is required.{% endif %}"

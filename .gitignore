@@ -21,6 +21,7 @@ coasti_planner.sqlite*
 .env
 .env.*
 !.env.example
+!.env.jinja
 
 # Local runtime configs
 config.dev.yml
