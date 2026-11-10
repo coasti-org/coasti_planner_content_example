@@ -6,7 +6,9 @@
 # local config/database files.
 set -euo pipefail
 
-env_file=".devcontainer/.env"
+repo_root=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
+cd "$repo_root"
+env_file="$repo_root/.env"
 
 # The token can live in the gitignored .env file. A filled value wins over the
 # container environment so editing the file is enough to rotate the token.
@@ -31,7 +33,7 @@ fi
 
 if [ -z "${REGISTRY_RO_TOKEN:-}" ]; then
   echo "REGISTRY_RO_TOKEN is not set." >&2
-  echo "Copy .devcontainer/.env.example to .devcontainer/.env and fill in a" >&2
+  echo "Copy .env.example to .env in the repository root and fill in a" >&2
   echo "read-only @coasti token, then rerun:" >&2
   echo "  bash .devcontainer/post-create.sh" >&2
   exit 1

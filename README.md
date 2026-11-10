@@ -8,7 +8,7 @@ Python models in `tables/`, `filters/`, `actions/`, and `outlets/`.
 The recommended setup is the VS Code dev container.
 
 1. Install Docker and the VS Code Dev Containers extension.
-2. Copy `.devcontainer/.env.example` to `.devcontainer/.env` and fill in the
+2. Copy `.env.example` to `.env` in the repository root and fill in the
    read-only registry token; see
    [`docker/README.md`](docker/README.md#prerequisites).
 3. Open [`content_example.code-workspace`](content_example.code-workspace) and
@@ -42,7 +42,7 @@ the `@coasti` packages are public; see
 installing:
 
 ```bash
-export REGISTRY_RO_TOKEN="$(sed -n 's/^REGISTRY_RO_TOKEN=//p' .devcontainer/.env | tail -n 1)"
+export REGISTRY_RO_TOKEN="$(sed -n 's/^REGISTRY_RO_TOKEN=//p' .env | tail -n 1)"
 pnpm config set "//git.linkfish.eu/api/packages/coasti/npm/:_authToken" "$REGISTRY_RO_TOKEN"
 pnpm install
 ```

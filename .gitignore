@@ -26,9 +26,6 @@ coasti_planner.sqlite*
 config.dev.yml
 config.prod.yml
 
-# Dev container secrets
-.devcontainer/.env
-
 # Node (frontend)
 node_modules/
 .pnpm_store
