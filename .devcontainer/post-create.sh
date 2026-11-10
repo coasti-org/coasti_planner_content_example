@@ -1,4 +1,9 @@
 #!/usr/bin/env bash
+# Runs once after the container is created or rebuilt. The image provides the
+# pinned toolchain; this script prepares workspace state that cannot live in an
+# image: install dependencies into the workspace's node_modules volume, make
+# Docker-created volume mounts writable, inject the registry token at runtime,
+# and create local config/database files.
 set -euo pipefail
 
 if [ -z "${REGISTRY_RO_TOKEN:-}" ]; then

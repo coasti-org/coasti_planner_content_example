@@ -10,6 +10,30 @@ Both install Node, pnpm, uv, and the pinned `coasti-planner` release into a
 shared venv at `/opt/coasti/venv`. The VS Code configuration lives in
 [`../.devcontainer/`](../.devcontainer/).
 
+## How it works
+
+`devcontainer.json` is a VS Code recipe, not a Docker feature. VS Code builds
+the `dev` target, starts one container with the extension repo bind-mounted at
+`/workspaces/<repo>`, and attaches its server. The editor UI stays on the host;
+terminals, tasks, language servers, and the app run in the container. VS Code
+runs it as an unprivileged remote user and aligns that user's UID with the host
+on Linux. Ports `8000` and `5174` are forwarded to the host's `localhost`.
+
+The setup is split into three layers:
+
+- **Image** (`Dockerfile`, target `dev`) — the pinned toolchain, built from this
+  repository. Rebuild it when its contents change.
+- **`postCreateCommand`** — runs once per container creation or rebuild: fixes
+  volume ownership, injects the registry token, installs `node_modules` into the
+  workspace, and creates local config/database files. This state is per
+  workspace and must not be baked into an image.
+- **`postStartCommand`** — runs on every container start and re-syncs
+  dependencies when the lockfile changed.
+
+`node_modules` and the pnpm store are Docker volumes because TypeScript 7,
+oxlint, and tsgolint ship platform-specific binaries. The store is shared for
+hardlink deduplication.
+
 ## Prerequisites
 
 - Docker (Docker Desktop or a compatible engine).
@@ -59,11 +83,6 @@ pnpm format:check # oxfmt
 The container installs basedpyright, Ruff, and Oxc extensions and points them at
 the container-local `node_modules` and the `/opt/coasti/venv` interpreter, so
 editor diagnostics and the CLI checks use the same binaries.
-
-`node_modules` lives in a Docker volume because TypeScript 7, oxlint, and
-tsgolint ship platform-specific binaries. The pnpm store is a shared volume for
-hardlink deduplication. Dependencies are reinstalled on every container start;
-rebuild the container after changing the Dockerfile or its tool version pins.
 
 ## Compose
 
