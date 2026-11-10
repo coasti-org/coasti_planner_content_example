@@ -1,5 +1,5 @@
 import { theme } from "antd";
-import { use, useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { useExtension, useScreenNavigation } from "@coasti/planner-ui/contexts";
 
@@ -175,16 +175,23 @@ function themeVariables(token: AntDesignTokens) {
   };
 }
 
+type ThemeVariables = ReturnType<typeof themeVariables>;
+
 type MermaidRender =
   | { status: "ready"; svg: string }
   | { status: "error"; message: string };
 
+interface MermaidRenderEntry {
+  promise: Promise<MermaidRender>;
+  result?: MermaidRender;
+}
+
 let diagramCount = 0;
-const renderCache = new Map<string, Promise<MermaidRender>>();
+const renderCache = new Map<string, MermaidRenderEntry>();
 
 async function renderDiagram(
   source: string,
-  variables: ReturnType<typeof themeVariables>,
+  variables: ThemeVariables,
 ): Promise<MermaidRender> {
   try {
     const { default: mermaid } = await import("mermaid");
@@ -210,24 +217,62 @@ async function renderDiagram(
   }
 }
 
+function ensureRender(
+  source: string,
+  variables: ThemeVariables,
+): MermaidRenderEntry {
+  const key = JSON.stringify([source, variables]);
+  const cached = renderCache.get(key);
+  if (cached !== undefined) {
+    return cached;
+  }
+  const entry: MermaidRenderEntry = {
+    promise: renderDiagram(source, variables),
+  };
+  renderCache.set(key, entry);
+  void (async () => {
+    entry.result = await entry.promise;
+  })();
+  return entry;
+}
+
 /**
- * Suspends until Mermaid is loaded and the chart is fully rendered, so the
- * surrounding pending boundary stays visible instead of showing a half-built
- * page. The promise is cached per chart and theme, so re-renders and remounts
- * reuse the finished SVG instead of rendering again.
+ * Render result for one chart and theme.
+ *
+ * The first render suspends until Mermaid is done, so the surrounding pending
+ * boundary stays visible instead of showing a half-built page. A later chart
+ * (another process state or theme) renders in the background and keeps the
+ * previous SVG on screen until the new one is ready, so updates never fall
+ * back to a loading state.
  */
 function useMermaidRender(
   source: string,
   token: AntDesignTokens,
 ): MermaidRender {
   const variables = themeVariables(token);
-  const key = JSON.stringify([source, variables]);
-  let render = renderCache.get(key);
-  if (render === undefined) {
-    render = renderDiagram(source, variables);
-    renderCache.set(key, render);
+  const entry = ensureRender(source, variables);
+  const [render, setRender] = useState<MermaidRender | undefined>(entry.result);
+
+  useEffect(() => {
+    let active = true;
+    void (async () => {
+      const result = await entry.promise;
+      if (active) {
+        setRender(result);
+      }
+    })();
+    return () => {
+      active = false;
+    };
+  }, [entry]);
+
+  const current = entry.result ?? render;
+  if (current === undefined) {
+    // Suspense contract: React needs the pending promise thrown to suspend.
+    // oxlint-disable-next-line typescript/only-throw-error
+    throw entry.promise;
   }
-  return use(render);
+  return current;
 }
 
 /**
@@ -235,7 +280,7 @@ function useMermaidRender(
  *
  * Nodes listed in `nodeScreenLinks` open an extension screen, and `nodeStates`
  * colours the nodes without touching the authored chart. The component
- * suspends while Mermaid loads and renders.
+ * suspends until the first Mermaid render is ready.
  */
 export function MermaidDiagram({
   chart,

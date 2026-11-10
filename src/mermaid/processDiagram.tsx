@@ -1,4 +1,5 @@
 import { Space, Typography } from "antd";
+import { useMemo } from "react";
 
 import { ActionButton } from "@coasti/planner-ui/components";
 import { useOutletValue } from "@coasti/planner-ui/contexts";
@@ -96,6 +97,7 @@ export function ProcessDiagram() {
   const current: StageId = isStageId(stageQuery.data)
     ? stageQuery.data
     : "draft";
+  const nodeStates = useMemo(() => nodeStatesFor(current), [current]);
 
   return (
     <>
@@ -123,7 +125,7 @@ export function ProcessDiagram() {
       <MermaidDiagram
         chart={chart}
         nodeScreenLinks={nodeScreenLinks}
-        nodeStates={nodeStatesFor(current)}
+        nodeStates={nodeStates}
       />
     </>
   );
