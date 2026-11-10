@@ -5,20 +5,31 @@ Python models in `tables/`, `filters/`, `actions/`, and `outlets/`.
 
 ## Run in Docker
 
-The recommended environment is the VS Code dev container: open this folder and
-run **Dev Containers: Reopen in Container**, then start the backend and the Vite
-dev server as described in [`docker/README.md`](docker/README.md).
+The recommended setup is the VS Code dev container.
 
-The production compose file lives there too:
+1. Install Docker and the VS Code Dev Containers extension.
+2. Set `REGISTRY_RO_TOKEN` in the host environment; see
+   [`docker/README.md`](docker/README.md#prerequisites).
+3. Open [`content_example.code-workspace`](content_example.code-workspace) and
+   run **Dev Containers: Open Workspace in Container...**.
+
+Once attached, start the backend and the extension in two terminals:
 
 ```bash
-docker compose -f docker/docker-compose.prod.yaml up --build
+# terminal 1
+coasti-planner config.dev.yml
+
+# terminal 2
+pnpm dev
 ```
 
-[`docker/README.md`](docker/README.md) covers the registry token, forwarded
-ports, checks, and image details.
+Open `http://localhost:8000`. See [`docker/README.md`](docker/README.md) for the
+production compose file, checks, and container details.
 
 ## Run on Host
+
+Open [`content_example.code-workspace`](content_example.code-workspace) for the
+same editor settings; it points the Python interpreter at `.venv`.
 
 ### Install
 

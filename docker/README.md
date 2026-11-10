@@ -7,7 +7,9 @@
   container.
 
 Both install Node, pnpm, uv, and the pinned `coasti-planner` release into a
-shared venv at `/opt/coasti/venv`. The VS Code configuration lives in
+shared venv at `/opt/coasti/venv`. The recommended entry point is
+[`../content_example.code-workspace`](../content_example.code-workspace), which
+carries the shared editor settings; the container definition lives in
 [`../.devcontainer/`](../.devcontainer/). Host setup and the example accounts
 are documented in the root [`README.md`](../README.md).
 
@@ -29,10 +31,14 @@ $env:REGISTRY_RO_TOKEN = "<read-only token>"
 
 ## Dev container (recommended)
 
-Open the extension folder in VS Code and run **Dev Containers: Reopen in
-Container**. The first start builds the `dev` stage and installs dependencies
-into Docker volumes; this takes a few minutes. The post-create script also
-copies `config.dev.example.yml` to `config.dev.yml` when it is missing.
+Open [`../content_example.code-workspace`](../content_example.code-workspace) in
+VS Code, then run **Dev Containers: Open Workspace in Container...**. Set
+`REGISTRY_RO_TOKEN` first (see [Prerequisites](#prerequisites)). The workspace
+file carries the shared editor settings; the container adds the interpreter
+paths and extensions. The first start builds the `dev` stage and installs
+dependencies into Docker volumes; this takes a few minutes. The post-create
+script also copies `config.dev.example.yml` to `config.dev.yml` when it is
+missing.
 
 Use two integrated terminals, or the `dev:backend` / `dev:extension` tasks:
 
@@ -93,10 +99,12 @@ Open `http://localhost:8000`.
 
 ## How it works
 
-`.devcontainer` is a VS Code convention, not a Docker feature. Docker builds and
-runs the container; VS Code reads `devcontainer.json`, builds the `dev` target,
-creates the container, installs its server inside it, and attaches the window.
-The workspace stays on the host as a bind mount at `/workspaces/<repo>`.
+`content_example.code-workspace` is the entry point for users: it carries the
+shared editor settings and extension recommendations. `.devcontainer` is a VS
+Code convention, not a Docker feature. Docker builds and runs the container; VS
+Code reads `devcontainer.json`, builds the `dev` target, creates the container,
+installs its server inside it, and attaches the window. The workspace stays on
+the host as a bind mount at `/workspaces/<repo>`.
 
 ### Lifecycle
 
