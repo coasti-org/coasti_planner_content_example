@@ -17,9 +17,6 @@ _exclude:
   - .github
   - .devcontainer
   - .vscode
-  - .gitignore
-  - coasti.yml
-  - .copier-answers.yml
   - coasti_install_questions.yml
   - copier.yml
 
