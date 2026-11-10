@@ -22,9 +22,13 @@ coasti_planner.sqlite*
 .env.*
 !.env.example
 
+# Local runtime configs
+config.dev.yml
+config.prod.yml
+
 # Node (frontend)
 node_modules/
-.pnpm_store
+.pnpm-store
 
 # Nix / direnv
 .direnv/

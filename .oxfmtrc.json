@@ -1,0 +1,32 @@
+{
+  "$schema": "./node_modules/oxfmt/configuration_schema.json",
+  "useTabs": false,
+  "tabWidth": 2,
+  "printWidth": 80,
+  "proseWrap": "always",
+  "endOfLine": "lf",
+  "insertFinalNewline": true,
+  "embeddedLanguageFormatting": "auto",
+  "singleQuote": false,
+  "jsxSingleQuote": false,
+  "quoteProps": "as-needed",
+  "trailingComma": "all",
+  "semi": true,
+  "arrowParens": "always",
+  "bracketSameLine": false,
+  "bracketSpacing": true,
+  "sortImports": {
+    "internalPattern": ["~/", "@/", "#", "@coasti/"]
+  },
+  "ignorePatterns": [
+    "**/node_modules",
+    "**/dist",
+    "**/.venv",
+    "**/.mypy_cache",
+    "**/.ruff_cache",
+    "**/.agents/**",
+    "**/*.toml",
+    "**/*.lock",
+    "pnpm-lock.yaml"
+  ]
+}

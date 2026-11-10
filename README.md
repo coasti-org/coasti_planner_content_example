@@ -1,75 +1,63 @@
 # Example extension (content package)
 
-## Run with Docker
+Example content package for the Coasti Planner: a React extension in `src/` and
+Python models in `tables/`, `filters/`, `actions/`, and `outlets/`.
 
-Two compose files live in `docker/`:
+## Run in Docker
 
-- `docker-compose.prod.yaml` builds the extension and serves the production
-  bundle from the backend.
-- `docker-compose.dev.yaml` runs the backend with model hot reload and the
-  extension's Vite dev server.
+The recommended setup is the VS Code dev container.
 
-Both need a read-only Coasti npm-registry token in `REGISTRY_RO_TOKEN`
-(temporary until the packages are fully public).
+1. Install Docker and the VS Code Dev Containers extension.
+2. Copy `.env.example` to `.env` in the repository root and fill in the
+   read-only registry token; see
+   [`docker/README.md`](docker/README.md#prerequisites).
+3. Open [`content_example.code-workspace`](content_example.code-workspace) and
+   run **Dev Containers: Open Workspace in Container...**.
 
-```bash
-# bash
-export REGISTRY_RO_TOKEN="<read-only token>"
-
-# powershell
-$env:REGISTRY_RO_TOKEN = "<read-only token>"
-```
-
-### Production
+Once attached, start the backend and the extension in two terminals:
 
 ```bash
-docker compose -f docker/docker-compose.prod.yaml up --build
+# terminal 1
+coasti-planner config.dev.yml
+
+# terminal 2
+pnpm dev
 ```
 
-Open `http://localhost:8000`.
-
-### Development
-
-```bash
-docker compose -f docker/docker-compose.dev.yaml up --build
-```
-
-Open `http://localhost:8000`. The backend reloads the extension's pydantic
-models, and the frontend hot-reloads from the Vite server on port `5174`.
-
-**Notes**
-
-- The image installs Node, pnpm, uv, and the pinned `coasti-planner` 0.2.2
-  release, which bundles both the production and the development framework
-  assets.
-- Compose mounts this repository at `/app` and keeps `node_modules` and the pnpm
-  store in Docker volumes.
-- Rebuild the image after changing `docker/entrypoint.prod.sh` or
-  `docker/entrypoint.dev.sh`.
-- If pnpm reports an incompatible `node_modules` volume (for example
-  `ERR_PNPM_ABORTED_REMOVE_MODULES_DIR_NO_TTY`), the entrypoints recover by
-  purging it automatically. To start from a clean slate instead, remove the
-  volumes with `docker compose -f docker/docker-compose.prod.yaml down -v`.
+Open `http://localhost:8000`. See [`docker/README.md`](docker/README.md) for the
+production compose file, checks, and container details.
 
 ## Run on Host
+
+Open [`content_example.code-workspace`](content_example.code-workspace) for the
+same editor settings. The dev container supplies the Python interpreter; on the
+host, select `.venv/bin/python` if the Python extension does not discover it.
 
 ### Install
 
 **Frontend**
 
-Install node >= 24 and pnpm >= 11:
+Install node >= 24 and pnpm >= 11. A read-only registry token is required until
+the `@coasti` packages are public; see
+[`docker/README.md`](docker/README.md#prerequisites). Export it before
+installing:
 
 ```bash
+export REGISTRY_RO_TOKEN="$(sed -n 's/^REGISTRY_RO_TOKEN=//p' .env | tail -n 1)"
 pnpm config set "//git.linkfish.eu/api/packages/coasti/npm/:_authToken" "$REGISTRY_RO_TOKEN"
 pnpm install
 ```
 
 **Backend**
 
-Install uv:
+Install uv and create one environment containing the framework and the checks,
+so mypy can resolve the framework types:
 
 ```bash
-uv tool install coasti-planner
+uv venv .venv
+uv pip install --python .venv/bin/python \
+  coasti-planner==0.2.3 ruff==0.16.9 mypy==2.3.1
+source .venv/bin/activate
 ```
 
 Generate the dummy database:
@@ -82,10 +70,8 @@ python ./scripts/generate_dummy_database.py
 
 The backend is always started with a runtime config. Keep it in this directory
 (the extension root): relative paths such as `extensions[].path` and `database`
-resolve against the config file. The compose files pass
-`config.prod.example.yml` / `config.dev.example.yml` directly; copy and edit one
-to use your own settings, then point the backend (or the compose `entrypoint`)
-at the copy:
+resolve against the config file. Start the backend with `config.dev.example.yml`
+/ `config.prod.example.yml` directly, or copy one to keep local settings:
 
 ```bash
 cp config.dev.example.yml config.dev.yml

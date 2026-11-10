@@ -1,6 +1,53 @@
+[tool.ruff]
+target-version = "py313"
+src = ["."]
+exclude = ["node_modules", "dist", "data", ".venv"]
 
+[tool.ruff.lint]
+future-annotations = true
+select = [
+    "A",   # flake8-builtins
+    "ANN", # flake8-annotations
+    "B",   # flake8-bugbear
+    "C4",  # flake8-comprehensions
+    "E",   # pycodestyle
+    "F",   # pyflakes
+    "I",   # isort
+    "ISC", # flake8-implicit-str-concat
+    "N",   # pep8-naming
+    "PIE", # flake8-pie
+    "PT",  # flake8-pytest-style
+    "RUF", # ruff
+    "RET", # flake8-return
+    "SIM", # flake8-simplify
+    "UP",  # pyupgrade
+    "TC",  # flake8-type-checking
+    "PTH", # use pathlib instead of os.path
+    "D",   # pydocstyle
+    "W",   # pycodestyle
+]
+ignore = [
+    # Docstrings are not mandatory for public functions.
+    "D10",
+    "D202",
+    "TC006",
+]
+fixable = ["ALL"]
 
-# Here we want to be able to set from which folders the backend
-# will read the cp-level python models.
+[tool.ruff.lint.flake8-type-checking]
+# Extension models are pydantic objects; their annotations are evaluated at
+# runtime, so imports used in models must remain runtime imports.
+runtime-evaluated-base-classes = ["pydantic.BaseModel"]
 
-# Here we also define where the dist gets compiled to.
+[tool.mypy]
+python_version = "3.13"
+files = ["tables", "filters", "actions", "outlets", "scripts"]
+mypy_path = ["."]
+explicit_package_bases = true
+warn_unreachable = true
+strict = true
+check_untyped_defs = true
+disallow_untyped_decorators = true
+allow_redefinition = true
+warn_unused_configs = true
+exclude = ["(^|/)(node_modules|dist|data|\\.venv)(/|$)"]

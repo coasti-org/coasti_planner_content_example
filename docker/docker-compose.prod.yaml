@@ -3,6 +3,7 @@ services:
     build:
       context: ..
       dockerfile: docker/Dockerfile
+      target: prod
     working_dir: /app
     secrets:
       - registry_ro_token

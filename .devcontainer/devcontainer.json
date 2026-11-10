@@ -1,0 +1,48 @@
+{
+  "name": "Coasti content extension",
+  "build": {
+    "context": "..",
+    "dockerfile": "../docker/Dockerfile",
+    "target": "dev"
+  },
+  "remoteUser": "node",
+  "init": true,
+  "runArgs": ["--name", "coasti-planner-content-example-dev"],
+  "containerEnv": {
+    "REGISTRY_RO_TOKEN": "${localEnv:REGISTRY_RO_TOKEN}"
+  },
+  "mounts": [
+    "source=${localWorkspaceFolderBasename}-node-modules,target=${containerWorkspaceFolder}/node_modules,type=volume",
+    "source=coasti-pnpm-store,target=/pnpm-store,type=volume"
+  ],
+  "postCreateCommand": "bash .devcontainer/post-create.sh",
+  "postStartCommand": "CI=true pnpm install --frozen-lockfile",
+  "forwardPorts": [8000, 5174],
+  "portsAttributes": {
+    "8000": {
+      "label": "Coasti Planner",
+      "onAutoForward": "notify"
+    },
+    "5174": {
+      "label": "Extension (Vite)",
+      "onAutoForward": "silent"
+    }
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "detachhead.basedpyright",
+        "ms-python.python",
+        "charliermarsh.ruff",
+        "oxc.oxc-vscode",
+        "redhat.vscode-yaml"
+      ],
+      "settings": {
+        "python.defaultInterpreterPath": "/opt/coasti/venv/bin/python",
+        "basedpyright.analysis.extraPaths": [
+          "/opt/coasti/venv/lib/python3.13/site-packages"
+        ]
+      }
+    }
+  }
+}

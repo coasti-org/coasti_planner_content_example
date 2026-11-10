@@ -1,0 +1,33 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "quality-check",
+      "type": "shell",
+      "command": "pnpm lint && ruff check . && pnpm format:check && ruff format --check .",
+      "group": {
+        "kind": "test",
+        "isDefault": true
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "quality-fix",
+      "type": "shell",
+      "command": "pnpm lint:fix && pnpm format && ruff check --fix . && ruff format .",
+      "problemMatcher": []
+    },
+    {
+      "label": "dev:backend",
+      "type": "shell",
+      "command": "coasti-planner config.dev.yml",
+      "problemMatcher": []
+    },
+    {
+      "label": "dev:extension",
+      "type": "shell",
+      "command": "pnpm dev",
+      "problemMatcher": []
+    }
+  ]
+}

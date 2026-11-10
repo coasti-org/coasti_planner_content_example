@@ -1,6 +1,5 @@
 from coasti_planner.extensions.models import NotificationAction
 
-
 dummy_notify_action = NotificationAction(
     id="dummy_notify_action",
     name="Notify about the dummy table",
