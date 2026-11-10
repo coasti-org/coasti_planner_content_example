@@ -1,4 +1,7 @@
-# Coasti uses Copier to install products.
+# These questions are used during Extension creation (not their downstrea rollout)
+# A template to create all the Extenson copier setup to turn them into a proper
+# coasti product is still a TODO.
+
 # For details on creating Copier templates, and the settings used here:
 # https://copier.readthedocs.io/en/stable/
 
@@ -16,12 +19,12 @@ _exclude:
   - .github
   - .devcontainer
   - .vscode
-  - coasti_install_questions.yml
+  - copier_questions.yml
   - copier.yml
 
 ---
 
-!include coasti_install_questions.yml
+!include copier_questions.yml
 
 ---
 
