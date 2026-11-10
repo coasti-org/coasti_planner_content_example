@@ -7,7 +7,7 @@ FROM ghcr.io/astral-sh/uv:0.11.28 AS uv
 # root (compose) and the non-root dev-container user.
 FROM node:24-bookworm-slim AS base
 
-ARG COASTI_VERSION=0.2.2
+ARG COASTI_VERSION=0.2.3
 ARG PNPM_VERSION=11.27.0
 
 ENV PATH="/opt/coasti/venv/bin:${PATH}" \

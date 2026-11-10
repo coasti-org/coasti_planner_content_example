@@ -162,7 +162,7 @@ Open `http://localhost:8000`.
 
 - The compose file uses the `prod` stage; the dev container uses the `dev`
   stage.
-- The image installs Node, pnpm, uv, and the pinned `coasti-planner` 0.2.2
+- The image installs Node, pnpm, uv, and the pinned `coasti-planner`
   release, which bundles both the production and the development framework
   assets. The pin must expose the model API this extension uses; bump
   `COASTI_VERSION` once a framework branch with unreleased changes is published.
