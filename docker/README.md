@@ -71,8 +71,12 @@ pnpm check:py     # ruff + mypy
 pnpm format:check # oxfmt
 ```
 
-`pnpm fix` applies the automatic fixes from Oxlint, Oxfmt, and Ruff; type errors
-still need manual changes.
+The `quality-check` and `quality-fix` VS Code tasks mirror the framework's quality
+control. To run, use the command pallette: `run task`.
+
+`pnpm check` additionally runs `tsc` and mypy. `pnpm fix` applies the same
+automatic fixes from Oxlint, Oxfmt, and Ruff; type errors still need manual
+changes.
 
 These are the CLI equivalents of the editor checks. The container runs
 basedpyright, Ruff, Oxc, and the TypeScript server against the same

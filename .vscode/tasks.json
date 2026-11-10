@@ -2,9 +2,9 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "check",
+      "label": "quality-check",
       "type": "shell",
-      "command": "pnpm check",
+      "command": "pnpm lint && ruff check . && pnpm format:check && ruff format --check .",
       "group": {
         "kind": "test",
         "isDefault": true
@@ -12,9 +12,9 @@
       "problemMatcher": []
     },
     {
-      "label": "fix",
+      "label": "quality-fix",
       "type": "shell",
-      "command": "pnpm fix",
+      "command": "pnpm lint:fix && pnpm format && ruff check --fix . && ruff format .",
       "problemMatcher": []
     },
     {
