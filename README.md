@@ -3,12 +3,24 @@
 Example content package for the Coasti Planner: a React extension in `src/` and
 Python models in `tables/`, `filters/`, `actions/`, and `outlets/`.
 
-## Getting started
+## Run in Docker
 
-The recommended environment is the VS Code dev container, which runs the
-toolchain, the language servers, and the app inside Docker. See
-[`docker/README.md`](docker/README.md) for the dev container, compose files, and
-the checks it provides.
+The recommended environment is the VS Code dev container: open this folder and
+run **Dev Containers: Reopen in Container**, then start the backend and the Vite
+dev server as described in [`docker/README.md`](docker/README.md).
+
+The compose files live there too:
+
+```bash
+# production
+docker compose -f docker/docker-compose.prod.yaml up --build
+
+# development
+docker compose -f docker/docker-compose.dev.yaml up --build
+```
+
+[`docker/README.md`](docker/README.md) covers the registry token, forwarded
+ports, checks, and image details.
 
 ## Run on Host
 
