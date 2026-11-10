@@ -5,16 +5,13 @@ Python models in `tables/`, `filters/`, `actions/`, and `outlets/`.
 
 ## Run in Docker
 
-The recommended setup is the VS Code dev container.
+### Make changes using the dev container
 
 1. Install Docker and the VS Code Dev Containers extension.
-2. Copy `.env.example` to `.env` in the repository root and fill in the
-   read-only registry token; see
-   [`docker/README.md`](docker/README.md#prerequisites).
-3. Open [`content_example.code-workspace`](content_example.code-workspace) and
-   run **Dev Containers: Open Workspace in Container...**.
-
-Once attached, start the backend and the extension in two terminals:
+2. Open [`content_example.code-workspace`](content_example.code-workspace)
+3. Create a .env to hold the REGISTRY_RO_TOKEN needed for framework installation.
+4. Run **Dev Containers: Open Workspace in Container...**.
+5. Once attached, start the backend and the extension in two terminals:
 
 ```bash
 # terminal 1
@@ -26,6 +23,12 @@ pnpm dev
 
 Open `http://localhost:8000`. See [`docker/README.md`](docker/README.md) for the
 production compose file, checks, and container details.
+
+### To start in production
+
+```bash
+docker compose -f docker/docker-compose.prod.yaml up --build
+```
 
 ## Run on Host
 
@@ -98,7 +101,47 @@ pnpm dev
 
 Visit `localhost:8000`; the extension hot-reloads from `http://localhost:5174`.
 
-## Development users
+## Extension Development
+
+This repository is a Copier template. Use it to create a new extension
+repository.
+
+### Install Copier
+
+```bash
+uv tool install copier
+```
+
+### Create a new extension
+
+Clone this template and render it with the product details:
+
+```bash
+copier copy https://github.com/coasti-org/coasti_planner_content_example <new-extension-path>
+```
+
+Copier asks for the product ID and name; the answers are stored in
+`.copier-answers.yml`. It uses the answer to generate `coasti.yml` for your product.
+
+### Update to a newer version
+
+Before updating, have a look at the [framework changelog](https://git.linkfish.eu/coasti/coasti_planner/src/branch/main/CHANGELOG.md).
+In our current early development phase, expect breaking changes.
+
+Copier is based on repository tags. The template's tags are used as versions,
+so a new tag publishes a new version.
+
+```bash
+copier update --trust
+```
+
+To pin a specific version, pass the tag:
+
+```bash
+copier update --vcs-ref v1.1.0
+```
+
+### Development users
 
 The backend seeds these accounts the first time it starts against an empty meta
 database (`data/coasti_planner.sqlite`). The password is always the username;
