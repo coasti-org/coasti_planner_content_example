@@ -6,6 +6,7 @@
     },
   ],
   "settings": {
+    "python.terminal.useEnvFile": true,
     "python.terminal.activateEnvironment": true,
     "basedpyright.analysis.typeCheckingMode": "standard",
     "ruff.importStrategy": "fromEnvironment",
