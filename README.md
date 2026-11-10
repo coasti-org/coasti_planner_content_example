@@ -30,7 +30,8 @@ production compose file, checks, and container details.
 ## Run on Host
 
 Open [`content_example.code-workspace`](content_example.code-workspace) for the
-same editor settings; it points the Python interpreter at `.venv`.
+same editor settings. The dev container supplies the Python interpreter; on the
+host, select `.venv/bin/python` if the Python extension does not discover it.
 
 ### Install
 

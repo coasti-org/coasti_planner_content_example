@@ -6,11 +6,7 @@
     },
   ],
   "settings": {
-    "python.defaultInterpreterPath": "${workspaceFolder}/.venv/bin/python",
     "python.terminal.activateEnvironment": true,
-    "basedpyright.analysis.extraPaths": [
-      "${workspaceFolder}/.venv/lib/python3.13/site-packages",
-    ],
     "basedpyright.analysis.typeCheckingMode": "standard",
     "ruff.importStrategy": "fromEnvironment",
     "typescript.tsdk": "node_modules/typescript",
