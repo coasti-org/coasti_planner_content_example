@@ -53,7 +53,7 @@ dummy_table = Table(
     id="dummy_table",
     name="My Awesome Filter",
     description="My Awesome Filter Description",
-    sql_path=Path("./dummy_table.sql"),
+    sql=Path("./dummy_table.sql"),
     can_access=can_access,
     columns=[
         Column(

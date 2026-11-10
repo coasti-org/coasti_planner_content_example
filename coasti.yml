@@ -25,3 +25,4 @@ coasti_planner_extension:
     - ./tables
     - ./filters
     - ./actions
+    - ./outlets

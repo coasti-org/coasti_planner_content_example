@@ -85,6 +85,18 @@ def build_sql(rows: list[tuple[int, str, str, str, str, float, str, int, str, st
             "INSERT INTO dummy_table (row_id, kreis, amt, haushaltstelle, konto, betrag, datum, is_active, can_edit_roles, status) VALUES",
             values + ";",
             "",
+            "-- Single-row workflow state read by the current_stage outlet and written",
+            "-- by the set_stage_* actions. Kept separate from dummy_table so the",
+            "-- example shows a small, explicit round trip.",
+            "DROP TABLE IF EXISTS process_state;",
+            "",
+            "CREATE TABLE process_state (",
+            "    current_stage TEXT NOT NULL",
+            "        CHECK (current_stage IN ('draft', 'locked', 'done'))",
+            ");",
+            "",
+            "INSERT INTO process_state (current_stage) VALUES ('draft');",
+            "",
         )
     )
 
