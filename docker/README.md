@@ -8,31 +8,8 @@
 
 Both install Node, pnpm, uv, and the pinned `coasti-planner` release into a
 shared venv at `/opt/coasti/venv`. The VS Code configuration lives in
-[`../.devcontainer/`](../.devcontainer/).
-
-## How it works
-
-`devcontainer.json` is a VS Code recipe, not a Docker feature. VS Code builds
-the `dev` target, starts one container with the extension repo bind-mounted at
-`/workspaces/<repo>`, and attaches its server. The editor UI stays on the host;
-terminals, tasks, language servers, and the app run in the container. VS Code
-runs it as an unprivileged remote user and aligns that user's UID with the host
-on Linux. Ports `8000` and `5174` are forwarded to the host's `localhost`.
-
-The setup is split into three layers:
-
-- **Image** (`Dockerfile`, target `dev`) — the pinned toolchain, built from this
-  repository. Rebuild it when its contents change.
-- **`postCreateCommand`** — runs once per container creation or rebuild: fixes
-  volume ownership, injects the registry token, installs `node_modules` into the
-  workspace, and creates local config/database files. This state is per
-  workspace and must not be baked into an image.
-- **`postStartCommand`** — runs on every container start and re-syncs
-  dependencies when the lockfile changed.
-
-`node_modules` and the pnpm store are Docker volumes because TypeScript 7,
-oxlint, and tsgolint ship platform-specific binaries. The store is shared for
-hardlink deduplication.
+[`../.devcontainer/`](../.devcontainer/). Host setup and the example accounts
+are documented in the root [`README.md`](../README.md).
 
 ## Prerequisites
 
@@ -80,9 +57,9 @@ pnpm check:py     # ruff + mypy
 pnpm format:check # oxfmt
 ```
 
-The container installs basedpyright, Ruff, and Oxc extensions and points them at
-the container-local `node_modules` and the `/opt/coasti/venv` interpreter, so
-editor diagnostics and the CLI checks use the same binaries.
+These are the CLI equivalents of the editor checks. The container runs
+basedpyright, Ruff, Oxc, and the TypeScript server against the same
+`node_modules` and `/opt/coasti/venv` interpreter.
 
 ## Compose
 
@@ -114,7 +91,51 @@ Open `http://localhost:8000`.
   purging it automatically. To start from a clean slate instead, remove the
   volumes with `docker compose -f docker/docker-compose.prod.yaml down -v`.
 
-## Related
+## How it works
 
-Host setup and development users are documented in
-[`../README.md`](../README.md).
+`.devcontainer` is a VS Code convention, not a Docker feature. Docker builds and
+runs the container; VS Code reads `devcontainer.json`, builds the `dev` target,
+creates the container, installs its server inside it, and attaches the window.
+The workspace stays on the host as a bind mount at `/workspaces/<repo>`.
+
+### Lifecycle
+
+| Stage               | When                                   | What happens                                                                                                            |
+| ------------------- | -------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| Image build         | on create or rebuild                   | `Dockerfile` target `dev` installs the toolchain: Node, pnpm, uv, Python, pinned `coasti-planner`, git/sudo, Ruff, mypy |
+| Container creation  | once per container, also after rebuild | bind mount, named volumes, `REGISTRY_RO_TOKEN`, `init`, unprivileged remote user                                        |
+| `postCreateCommand` | once per creation or rebuild           | chown volumes, write `~/.npmrc`, `pnpm install`, `config.dev.yml`, dummy DB                                             |
+| VS Code attach      | after setup                            | server and remote extensions start in the container                                                                     |
+| `postStartCommand`  | every start                            | `pnpm install --frozen-lockfile` re-sync                                                                                |
+| Terminal            | on demand                              | `coasti-planner config.dev.yml`, `pnpm dev`                                                                             |
+
+### Where things live
+
+| Thing                                      | Host                              | Container                       |
+| ------------------------------------------ | --------------------------------- | ------------------------------- |
+| VS Code UI                                 | yes                               |                                 |
+| VS Code Server, terminals, tasks, debugger |                                   | yes                             |
+| basedpyright, Ruff, Oxc, TypeScript server |                                   | yes                             |
+| Node, pnpm, `coasti-planner`, Ruff, mypy   |                                   | yes                             |
+| `node_modules`, pnpm store                 |                                   | Docker volumes                  |
+| Repository files                           | bind mount                        | visible at `/workspaces/<repo>` |
+| Browser                                    | opens forwarded `localhost` ports | tunnels `8000` and `5174`       |
+
+### Why the split
+
+- **Image vs workspace.** The image is slow, stable, and built from this
+  repository; it holds the toolchain, not the extension's dependencies. A
+  `package.json` change should be a seconds-long `pnpm install`, not a rebuild.
+- **Volumes.** The workspace is a bind mount, so the image cannot populate
+  `<workspace>/node_modules`; `postCreate` installs into a named volume there.
+  The volume keeps platform-specific binaries (TypeScript 7, oxlint, tsgolint)
+  Linux-side. The pnpm store is a shared volume for hardlink deduplication.
+- **Ownership.** Docker creates volume mount points as root. The container runs
+  as an unprivileged remote user (VS Code aligns its UID with the host on
+  Linux), so the `dev` stage installs passwordless `sudo` and `postCreate`
+  chowns the volumes.
+- **Secrets.** `REGISTRY_RO_TOKEN` enters the container at runtime; `~/.npmrc`
+  references it by variable name, so the token is not in the image or repo.
+- **Ports.** `forwardPorts` is the VS Code tunnel, not Docker port publishing.
+  The browser resolves the backend's `dev_url` (`http://localhost:5174`) on the
+  host, and VS Code forwards it into the container.
