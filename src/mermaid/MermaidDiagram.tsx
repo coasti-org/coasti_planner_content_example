@@ -1,5 +1,5 @@
 import { theme } from "antd";
-import { useEffect, useId, useMemo, useRef, useState } from "react";
+import { use, useEffect, useMemo, useRef } from "react";
 
 import { useExtension, useScreenNavigation } from "@coasti/planner-ui/contexts";
 
@@ -154,11 +154,88 @@ function buildSource(
   return lines.join("\n");
 }
 
+function themeVariables(token: AntDesignTokens) {
+  return {
+    background: "transparent",
+    primaryColor: token.colorBgContainer,
+    primaryTextColor: token.colorText,
+    primaryBorderColor: token.colorBorder,
+    lineColor: token.colorBorder,
+    textColor: token.colorText,
+    // Neutralise Mermaid's derived palette, which otherwise paints swimlane
+    // titles in rotated hues (tertiaryColor is primaryColor rotated 180
+    // degrees, i.e. a red lane background).
+    secondaryColor: token.colorBgContainer,
+    tertiaryColor: token.colorBgContainer,
+    clusterBkg: token.colorFillQuaternary,
+    clusterBorder: token.colorBorder,
+    dropShadow: "none",
+    fontFamily: token.fontFamily,
+    fontSize: `${token.fontSize}px`,
+  };
+}
+
+type MermaidRender =
+  | { status: "ready"; svg: string }
+  | { status: "error"; message: string };
+
+let diagramCount = 0;
+const renderCache = new Map<string, Promise<MermaidRender>>();
+
+async function renderDiagram(
+  source: string,
+  variables: ReturnType<typeof themeVariables>,
+): Promise<MermaidRender> {
+  try {
+    const { default: mermaid } = await import("mermaid");
+    mermaid.initialize({
+      startOnLoad: false,
+      // The extension author writes the chart, and `click` links are only
+      // added from the trusted `nodeScreenLinks` map.
+      securityLevel: "loose",
+      theme: "base",
+      themeVariables: variables,
+    });
+    diagramCount += 1;
+    const { svg } = await mermaid.render(
+      `cpfw-diagram-${diagramCount}`,
+      source,
+    );
+    return { status: "ready", svg };
+  } catch (cause: unknown) {
+    return {
+      status: "error",
+      message: cause instanceof Error ? cause.message : String(cause),
+    };
+  }
+}
+
+/**
+ * Suspends until Mermaid is loaded and the chart is fully rendered, so the
+ * surrounding pending boundary stays visible instead of showing a half-built
+ * page. The promise is cached per chart and theme, so re-renders and remounts
+ * reuse the finished SVG instead of rendering again.
+ */
+function useMermaidRender(
+  source: string,
+  token: AntDesignTokens,
+): MermaidRender {
+  const variables = themeVariables(token);
+  const key = JSON.stringify([source, variables]);
+  let render = renderCache.get(key);
+  if (render === undefined) {
+    render = renderDiagram(source, variables);
+    renderCache.set(key, render);
+  }
+  return use(render);
+}
+
 /**
  * Renders a Mermaid diagram offline and follows the host light/dark theme.
  *
  * Nodes listed in `nodeScreenLinks` open an extension screen, and `nodeStates`
- * colours the nodes without touching the authored chart.
+ * colours the nodes without touching the authored chart. The component
+ * suspends while Mermaid loads and renders.
  */
 export function MermaidDiagram({
   chart,
@@ -170,13 +247,6 @@ export function MermaidDiagram({
   const navigateToScreen = useScreenNavigation();
   const extension = useExtension();
   const containerRef = useRef<HTMLDivElement>(null);
-  const renderCountRef = useRef(0);
-  const [error, setError] = useState<string | null>(null);
-  const reactId = useId();
-  const renderId = useMemo(
-    () => `cpfw-${reactId.replaceAll(/[^a-zA-Z0-9-]/g, "")}`,
-    [reactId],
-  );
 
   // Mermaid cannot render React links, so `buildSource` turns these into
   // `click` directives. The same URLs are reused by the click handler below to
@@ -201,77 +271,9 @@ export function MermaidDiagram({
     [chart, nodeStates, token, links],
   );
 
-  // Draws the authored chart plus the injected state classes and click
-  // directives into the container. Mermaid is imported on demand so it stays
-  // out of the initial bundle, and a render that finishes after the source
-  // changed or the component unmounted is discarded instead of overwriting the
-  // container.
-  useEffect(() => {
-    const element = containerRef.current;
-    let active = true;
-
-    if (element !== null) {
-      // A fresh id per render keeps React StrictMode's double effect from
-      // rendering two diagrams under the same mermaid id.
-      const renderCount = renderCountRef.current;
-      renderCountRef.current += 1;
-      const diagramId = `${renderId}-${renderCount}`;
-      setError(null);
-      element.replaceChildren();
-      void (async () => {
-        try {
-          const module = await import("mermaid");
-          const mermaid = module.default;
-          mermaid.initialize({
-            startOnLoad: false,
-            // The extension author writes the chart, and `click` links are
-            // only added from the trusted `nodeScreenLinks` map.
-            securityLevel: "loose",
-            theme: "base",
-            themeVariables: {
-              background: "transparent",
-              primaryColor: token.colorBgContainer,
-              primaryTextColor: token.colorText,
-              primaryBorderColor: token.colorBorder,
-              lineColor: token.colorBorder,
-              textColor: token.colorText,
-              // Neutralise Mermaid's derived palette, which otherwise paints
-              // swimlane titles in rotated hues (tertiaryColor is primaryColor
-              // rotated 180 degrees, i.e. a red lane background).
-              secondaryColor: token.colorBgContainer,
-              tertiaryColor: token.colorBgContainer,
-              clusterBkg: token.colorFillQuaternary,
-              clusterBorder: token.colorBorder,
-              dropShadow: "none",
-              fontFamily: token.fontFamily,
-              fontSize: `${token.fontSize}px`,
-            },
-          });
-          const { svg } = await mermaid.render(diagramId, source);
-          if (active) {
-            element.innerHTML = svg;
-          }
-        } catch (cause: unknown) {
-          if (active) {
-            setError(cause instanceof Error ? cause.message : String(cause));
-          }
-        }
-      })();
-    }
-
-    return () => {
-      active = false;
-    };
-  }, [
-    renderId,
-    source,
-    token.colorBgContainer,
-    token.colorBorder,
-    token.colorText,
-    token.colorFillQuaternary,
-    token.fontFamily,
-    token.fontSize,
-  ]);
+  // Mermaid is imported and the chart is rendered inside this suspense
+  // resource, so the route's pending boundary shows until the SVG is ready.
+  const render = useMermaidRender(source, token);
 
   // Mermaid emits a plain anchor for every linked node, which would reload the
   // page. Intercept those clicks and open the screen through the host router,
@@ -316,10 +318,15 @@ export function MermaidDiagram({
       className={className}
       style={diagramStyle}
     >
-      <div ref={containerRef} />
-      {error !== null && (
+      <div
+        ref={containerRef}
+        dangerouslySetInnerHTML={
+          render.status === "ready" ? { __html: render.svg } : undefined
+        }
+      />
+      {render.status === "error" && (
         <p role="alert" style={{ color: token.colorError, margin: "4px 0 0" }}>
-          Diagram could not be rendered: {error}
+          Diagram could not be rendered: {render.message}
         </p>
       )}
     </figure>
