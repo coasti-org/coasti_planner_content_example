@@ -64,7 +64,7 @@ automatically.
 ### Checks
 
 ```bash
-pnpm check        # oxlint + tsc + ruff + mypy
+pnpm check        # oxlint + tsc + oxfmt + ruff + mypy
 pnpm lint         # Oxlint (type-aware)
 pnpm typecheck    # TypeScript 7
 pnpm check:py     # ruff + mypy
