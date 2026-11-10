@@ -27,6 +27,8 @@ _exclude:
 
 !include coasti_install_questions.yml
 
+---
+
 # Updates should not overwrite existing settings.
 _skip_if_exists:
   - .env

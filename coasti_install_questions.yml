@@ -5,7 +5,12 @@ product_id:
   type: str
   help: "Unique product ID (company_my_product, no special characters except _)"
   default: "{{ _copier_conf.dst_path | basename }}"
-  validator: "{% if not product_id %}Product ID is required.{% elif not product_id | regex_match('^[a-z][a-z0-9_]*$') %}Product ID must match ^[a-z][a-z0-9_]*$ (lowercase letters, digits, underscores, starting with a letter).{% endif %}"
+  validator: >-
+    {% if not product_id %}
+    product_id is required.
+    {% elif not (product_id | regex_search('^[a-z][a-z0-9_]*$')) %}
+    product_id must start with a letter, followed by one or more letters, digits or underscores, all lowercase.
+    {% endif %}
 
 product_name:
   type: str
