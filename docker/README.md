@@ -42,6 +42,11 @@ If post-create already failed because the token was missing, create
 `.devcontainer/.env` and run `bash .devcontainer/post-create.sh` in a container
 terminal; no rebuild is needed.
 
+The container is named `coasti-planner-content-example-dev` via `runArgs`, so it
+is easy to identify in Docker Desktop. Rebuilding replaces it; if Docker reports
+a name conflict, remove the old container with
+`docker rm -f coasti-planner-content-example-dev`.
+
 Use two integrated terminals, or the `dev:backend` / `dev:extension` tasks:
 
 ```bash
@@ -81,9 +86,9 @@ Create `.devcontainer/.env` as described in [Prerequisites](#prerequisites),
 then run these from the extension root:
 
 ```bash
-docker build --target dev -f docker/Dockerfile -t coasti-content-example-dev .
+docker build --target dev -f docker/Dockerfile -t coasti-planner-content-example-dev .
 
-docker run --rm -it --init --name coasti-content-example-dev \
+docker run --rm -it --init --name coasti-planner-content-example-dev \
   --user node \
   -w /workspaces/content_example \
   --env-file .devcontainer/.env \
@@ -91,7 +96,7 @@ docker run --rm -it --init --name coasti-content-example-dev \
   -v content_example-node-modules:/workspaces/content_example/node_modules \
   -v coasti-pnpm-store:/pnpm-store \
   -p 8000:8000 -p 5174:5174 \
-  coasti-content-example-dev bash
+  coasti-planner-content-example-dev bash
 ```
 
 Inside the container, prepare the workspace and start the backend:
@@ -104,13 +109,13 @@ coasti-planner config.dev.yml
 In a second host terminal, start the extension and run the checks:
 
 ```bash
-docker exec -it coasti-content-example-dev pnpm dev
-docker exec -it coasti-content-example-dev pnpm check
+docker exec -it coasti-planner-content-example-dev pnpm dev
+docker exec -it coasti-planner-content-example-dev pnpm check
 ```
 
 Open `http://localhost:8000`. Edits on the host are visible through the bind
-mount. Stop the stack with `docker stop coasti-content-example-dev`; `--rm`
-removes the container, while the named volumes persist.
+mount. Stop the stack with `docker stop coasti-planner-content-example-dev`;
+`--rm` removes the container, while the named volumes persist.
 
 **Notes**
 
