@@ -21,6 +21,7 @@ coasti_planner.sqlite*
 .env
 .env.*
 !.env.example
+!.env.jinja
 
 # Local runtime configs
 config.dev.yml
@@ -39,3 +40,10 @@ node_modules/
 # Module Federation
 @mf-types
 .mf
+
+# Copier template development files
+coasti.yml
+.copier-answers.yml
+*.code-workspace
+!{{product_id}}.code-workspace
+package.json

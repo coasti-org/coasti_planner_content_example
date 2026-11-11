@@ -25,11 +25,11 @@ importers:
         version: 19.3.0(react@19.3.0)
     devDependencies:
       '@coasti/planner-contract':
-        specifier: 0.2.3
-        version: 0.2.3
+        specifier: 0.2.4
+        version: 0.2.4
       '@coasti/planner-ui':
-        specifier: 0.2.3
-        version: 0.2.3(@glideapps/glide-data-grid@6.0.3(lodash@4.18.1)(marked@4.3.0)(react-dom@19.3.0(react@19.3.0))(react-responsive-carousel@3.2.23)(react@19.3.0))(@tanstack/react-query@5.107.1(@types/react@19.3.0)(react@19.3.0))(@tanstack/react-router@1.170.46(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(antd@6.6.5(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+        specifier: 0.2.4
+        version: 0.2.4(@glideapps/glide-data-grid@6.0.3(lodash@4.18.1)(marked@4.3.0)(react-dom@19.3.0(react@19.3.0))(react-responsive-carousel@3.2.23)(react@19.3.0))(@tanstack/react-query@5.107.1(@types/react@19.3.0)(react@19.3.0))(@tanstack/react-router@1.170.46(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(antd@6.6.5(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
       '@module-federation/vite':
         specifier: ^1.23.1
         version: 1.23.1(typescript@7.0.2)(vite@8.3.2(@types/node@24.19.2))
@@ -223,11 +223,11 @@ packages:
   '@chevrotain/utils@13.2.0':
     resolution: {integrity: sha512-SzKYY68rseOrb9KILVzPsl6SjkQtdWw01SRGB5aCVI5kFcHltQsOYV3JB0Ffst72DgkvHCyDQ0NLwxtmCCf97Q==}
 
-  '@coasti/planner-contract@0.2.3':
-    resolution: {integrity: sha512-2teB76dFyB5mW3s5kX0OTpTKYdROmW7auaRl2egncdCOPnrtPIGL/AnxDCMBaKz1e2l1Se/oAjU1ASZPiv/jAw==, tarball: https://git.linkfish.eu/api/packages/coasti/npm/%40coasti%2Fplanner-contract/-/0.2.3/planner-contract-0.2.3.tgz}
+  '@coasti/planner-contract@0.2.4':
+    resolution: {integrity: sha512-qXd+5MCI6WLkJhkUphuNFqpKqY08+ZJn8ZBFZKdT3Z1zEXtPbcLKNYUz4WDi35geZWrR1UHAIcl8Qwq5wPyxnA==, tarball: https://git.linkfish.eu/api/packages/coasti/npm/%40coasti%2Fplanner-contract/-/0.2.4/planner-contract-0.2.4.tgz}
 
-  '@coasti/planner-ui@0.2.3':
-    resolution: {integrity: sha512-FYubjmFmuqF9Kjc4QAGoGNAgzX0FhpftYbVg9/kYf08HOSxLYDgL7Aa8d4YokpsJnGFB6WbaznQ590jJnMNTag==, tarball: https://git.linkfish.eu/api/packages/coasti/npm/%40coasti%2Fplanner-ui/-/0.2.3/planner-ui-0.2.3.tgz}
+  '@coasti/planner-ui@0.2.4':
+    resolution: {integrity: sha512-ftc8XBiI//TzF7NyQ8iSL7TYMNAYrSuwZyg8ALzxxTpOWqa/cmjiczZUZ0VOvQglIWZBKXCjkIQQNY+JpcohOQ==, tarball: https://git.linkfish.eu/api/packages/coasti/npm/%40coasti%2Fplanner-ui/-/0.2.4/planner-ui-0.2.4.tgz}
     peerDependencies:
       '@glideapps/glide-data-grid': ^6.0.3
       '@tanstack/react-query': ^5.104.1
@@ -2248,11 +2248,11 @@ snapshots:
 
   '@chevrotain/utils@13.2.0': {}
 
-  '@coasti/planner-contract@0.2.3': {}
+  '@coasti/planner-contract@0.2.4': {}
 
-  '@coasti/planner-ui@0.2.3(@glideapps/glide-data-grid@6.0.3(lodash@4.18.1)(marked@4.3.0)(react-dom@19.3.0(react@19.3.0))(react-responsive-carousel@3.2.23)(react@19.3.0))(@tanstack/react-query@5.107.1(@types/react@19.3.0)(react@19.3.0))(@tanstack/react-router@1.170.46(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(antd@6.6.5(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(react-dom@19.3.0(react@19.3.0))(react@19.3.0)':
+  '@coasti/planner-ui@0.2.4(@glideapps/glide-data-grid@6.0.3(lodash@4.18.1)(marked@4.3.0)(react-dom@19.3.0(react@19.3.0))(react-responsive-carousel@3.2.23)(react@19.3.0))(@tanstack/react-query@5.107.1(@types/react@19.3.0)(react@19.3.0))(@tanstack/react-router@1.170.46(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(antd@6.6.5(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(react-dom@19.3.0(react@19.3.0))(react@19.3.0)':
     dependencies:
-      '@coasti/planner-contract': 0.2.3
+      '@coasti/planner-contract': 0.2.4
       '@glideapps/glide-data-grid': 6.0.3(lodash@4.18.1)(marked@4.3.0)(react-dom@19.3.0(react@19.3.0))(react-responsive-carousel@3.2.23)(react@19.3.0)
       '@tanstack/react-query': 5.107.1(@types/react@19.3.0)(react@19.3.0)
       '@tanstack/react-router': 1.170.46(react-dom@19.3.0(react@19.3.0))(react@19.3.0)

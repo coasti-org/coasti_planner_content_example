@@ -3,20 +3,20 @@
 # Unique ID; should follow the company_my_product format and contain no special
 # characters other than _
 # Used as the frontend and backend project/module ID.
-id: coasti_planner_content_example
+id: {{ product_id }}
 
 # Shorthands are used, for example, as prefixes for environment variables and
 # frontend datasets.
-id_shorthand: cpce
+id_shorthand: {{ id_shorthand }}
 
 # The name appears, for example, in the frontend dashboard and must be kept
 # consistent manually.
-name: "Coasti Planner Content Example"
-description: "Example content extension for the Coasti Planner."
+name: "{{ product_name }}"
+description: "{{ product_description }}"
 
 # The version follows SemVer and must be mirrored in package.json and
 # pyproject.toml. This is not fully automated yet.
-version: 0.2.3b1
+version: "{{ version }}"
 
 # Specific to Cosati Planner Framework Extensions:
 coasti_planner_extension:

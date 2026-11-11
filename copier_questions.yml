@@ -1,0 +1,41 @@
+# This file is included in `copier.yml` and executed during installation.
+# Answers are saved in `coasti_install_answers.yml` to enable updates.
+
+product_id:
+  type: str
+  help: "Unique product ID (company_my_product, no special characters except _)"
+  default: "{{ _copier_conf.dst_path | basename }}"
+  validator: >-
+    {% if not product_id %}
+    product_id is required.
+    {% elif not (product_id | regex_search('^[a-z][a-z0-9_]*$')) %}
+    product_id must start with a letter, followed by one or more letters, digits or underscores, all lowercase.
+    {% endif %}
+
+product_name:
+  type: str
+  help: "Product name (appears in the frontend dashboard)"
+  default: "{{ product_id | replace('_', ' ') | title }}"
+
+id_shorthand:
+  type: str
+  help: "Shorthand for prefixes (e.g., environment variables, frontend datasets)"
+  default: "{{ product_id.split('_') | map('first') | join('') }}"
+
+product_description:
+  type: str
+  help: "Product description"
+  default: ""
+
+version:
+  type: str
+  help: "Version (SemVer)"
+  default: "0.1.0"
+
+registry_ro_token:
+  type: str
+  help: "Read-only token for the @coasti npm registry (only needed in current dev phase)"
+  default: ""
+  placeholder: "ghp_..."
+  secret: true
+  validator: "{% if not registry_ro_token %}registry_ro_token is required.{% endif %}"
