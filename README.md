@@ -59,7 +59,7 @@ so mypy can resolve the framework types:
 ```bash
 uv venv .venv
 uv pip install --python .venv/bin/python \
-  coasti-planner==0.2.3 ruff==0.16.9 mypy==2.3.1
+  coasti-planner==0.2.4 ruff==0.16.9 mypy==2.3.1
 source .venv/bin/activate
 ```
 
