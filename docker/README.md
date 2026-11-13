@@ -71,8 +71,8 @@ pnpm check:py     # ruff + mypy
 pnpm format:check # oxfmt
 ```
 
-The `quality-check` and `quality-fix` VS Code tasks mirror the framework's quality
-control. To run, use the command pallette: `run task`.
+The `quality-check` and `quality-fix` VS Code tasks mirror the framework's
+quality control. To run, use the command pallette: `run task`.
 
 `pnpm check` additionally runs `tsc` and mypy. `pnpm fix` applies the same
 automatic fixes from Oxlint, Oxfmt, and Ruff; type errors still need manual
@@ -162,10 +162,10 @@ Open `http://localhost:8000`.
 
 - The compose file uses the `prod` stage; the dev container uses the `dev`
   stage.
-- The image installs Node, pnpm, uv, and the pinned `coasti-planner`
-  release, which bundles both the production and the development framework
-  assets. The pin must expose the model API this extension uses; bump
-  `COASTI_VERSION` once a framework branch with unreleased changes is published.
+- The image installs Node, pnpm, uv, and the pinned `coasti-planner` release,
+  which bundles both the production and the development framework assets. The
+  pin must expose the model API this extension uses; bump `COASTI_VERSION` once
+  a framework branch with unreleased changes is published.
 - Compose mounts this repository at `/app` and keeps `node_modules` and the pnpm
   store in Docker volumes.
 - Rebuild the image after changing `entrypoint.prod.sh`.
