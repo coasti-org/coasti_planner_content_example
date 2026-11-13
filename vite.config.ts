@@ -63,7 +63,7 @@ export default defineConfig(({ mode }) => ({
       name: manifest.id,
       filename: "remoteEntry.js",
       exposes: {
-        "./index": "./src/index.tsx",
+        "./index": "./src/frontend/index.tsx",
       },
       shared: {
         react: {
@@ -115,7 +115,7 @@ export default defineConfig(({ mode }) => ({
     outDir:
       coastiConfig.coasti_planner_extension?.frontend_build_folder ?? "dist",
     rolldownOptions: {
-      input: "./src/index.tsx",
+      input: "./src/frontend/index.tsx",
     },
   },
 }));

@@ -41,7 +41,13 @@ runtime-evaluated-base-classes = ["pydantic.BaseModel"]
 
 [tool.mypy]
 python_version = "3.13"
-files = ["tables", "filters", "actions", "outlets", "scripts"]
+files = [
+    "src/backend/tables",
+    "src/backend/filters",
+    "src/backend/actions",
+    "src/backend/outlets",
+    "scripts",
+]
 mypy_path = ["."]
 explicit_package_bases = true
 warn_unreachable = true
