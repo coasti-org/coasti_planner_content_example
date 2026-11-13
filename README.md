@@ -1,7 +1,8 @@
 # Example extension (content package)
 
-Example content package for the Coasti Planner: a React extension in `src/` and
-Python models in `tables/`, `filters/`, `actions/`, and `outlets/`.
+Example content package for the Coasti Planner: a React extension in `src/frontend/`
+and Python extension modules in `src/backend/` (`tables/`, `filters/`, `actions/`,
+and `outlets/`).
 
 ## Run in Docker
 
@@ -155,7 +156,7 @@ local development.
 | `politiker`  | `politiker`  | `politiker`                       |
 
 The `bearbeiter`, `controller`, and `politiker` roles belong to this example
-extension and are used by `tables/dummy_table.py`: a user may edit a `betrag` or
+extension's `src/backend/tables/dummy_table.py`: a user may edit a `betrag` or
 `is_active` cell only when the row's `can_edit_roles` column contains one of
 their roles and the row is in `draft` status. The framework-owned `admin` role
 stays internal and is not exposed to extensions.

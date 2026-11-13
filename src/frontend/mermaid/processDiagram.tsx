@@ -34,7 +34,7 @@ function isStageId(value: unknown): value is StageId {
   );
 }
 
-/** Node ids that link to a screen registered in `src/index.tsx`. */
+/** Node ids that link to a screen registered in `src/frontend/index.tsx`. */
 const nodeScreenLinks = {
   draft: "application",
   locked: "A",
