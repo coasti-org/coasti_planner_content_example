@@ -27,6 +27,7 @@
     "**/.agents/**",
     "**/*.toml",
     "**/*.lock",
-    "pnpm-lock.yaml"
+    "pnpm-lock.yaml",
+    "**/copier_questions.yml"
   ]
 }

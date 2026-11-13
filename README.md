@@ -1,8 +1,8 @@
 # Example extension (content package)
 
-Example content package for the Coasti Planner: a React extension in `src/frontend/`
-and Python extension modules in `src/backend/` (`tables/`, `filters/`, `actions/`,
-and `outlets/`).
+Example content package for the Coasti Planner: a React extension in
+`src/frontend/` and Python extension modules in `src/backend/` (`tables/`,
+`filters/`, `actions/`, and `outlets/`).
 
 ## Run in Docker
 
@@ -10,7 +10,8 @@ and `outlets/`).
 
 1. Install Docker and the VS Code Dev Containers extension.
 2. Open [`content_example.code-workspace`](content_example.code-workspace)
-3. Create a .env to hold the REGISTRY_RO_TOKEN needed for framework installation.
+3. Create a .env to hold the REGISTRY_RO_TOKEN needed for framework
+   installation.
 4. Run **Dev Containers: Open Workspace in Container...**.
 5. Once attached, start the backend and the extension in two terminals:
 
@@ -122,15 +123,18 @@ copier copy https://github.com/coasti-org/coasti_planner_content_example <new-ex
 ```
 
 Copier asks for the product ID and name; the answers are stored in
-`.copier-answers.yml`. It uses the answer to generate `coasti.yml` for your product.
+`.copier-answers.yml`. It uses the answer to generate `coasti.yml` for your
+product.
 
 ### Update to a newer version
 
-Before updating, have a look at the [framework changelog](https://git.linkfish.eu/coasti/coasti_planner/src/branch/main/CHANGELOG.md).
+Before updating, have a look at the
+[framework changelog](https://git.linkfish.eu/coasti/coasti_planner/src/branch/main/CHANGELOG.md).
 In our current early development phase, expect breaking changes.
 
-Copier is based on repository tags. The template's tags are used as versions,
-so a new tag publishes a new version.
+Copier uses this template repository's tags as versions. Pushing a `v*` tag runs
+CI and creates a GitHub Release after the checks pass. CI requires a repository
+secret named `REGISTRY_RO_TOKEN` to install private `@coasti` packages.
 
 ```bash
 copier update --trust

@@ -1,0 +1,36 @@
+name: Publish template release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+concurrency:
+  group: publish-template-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    uses: ./.github/workflows/ci.yml
+    permissions:
+      contents: read
+    secrets: inherit
+
+  release:
+    needs: checks
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Check out template tag
+        uses: actions/checkout@v4
+
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run:
+          gh release create "$GITHUB_REF_NAME" --title "$GITHUB_REF_NAME"
+          --generate-notes

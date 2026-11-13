@@ -1,0 +1,90 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - "**"
+  workflow_dispatch:
+  workflow_call:
+    secrets:
+      REGISTRY_RO_TOKEN:
+        required: true
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out template
+        uses: actions/checkout@v4
+
+      - name: Set rendered project path
+        run:
+          echo "EXTENSION_DIR=$RUNNER_TEMP/rendered-extension" >> "$GITHUB_ENV"
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11.27.0
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Install Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          version: 0.11.28
+
+      - name: Render extension template
+        run: |
+          uvx --from copier==9.17.0 copier copy . "$EXTENSION_DIR" --trust --defaults \
+            -d product_id=ci_example \
+            -d 'product_name=CI Example' \
+            -d id_shorthand=ci \
+            -d 'product_description=CI-rendered template' \
+            -d version=0.1.0 \
+            -d registry_ro_token=ci-placeholder
+
+      - name: Install Python quality tools
+        run: |
+          uv venv --python 3.13 "$EXTENSION_DIR/.venv"
+          uv pip install --python "$EXTENSION_DIR/.venv/bin/python" \
+            coasti-planner==0.2.4 ruff==0.16.9 mypy==2.3.1
+          # The pinned framework wheel does not yet include its PEP 561 marker.
+          touch "$EXTENSION_DIR/.venv/lib/python3.13/site-packages/coasti_planner/py.typed"
+          echo "$EXTENSION_DIR/.venv/bin" >> "$GITHUB_PATH"
+
+      - name: Configure private npm registry
+        env:
+          REGISTRY_RO_TOKEN: ${{ secrets.REGISTRY_RO_TOKEN }}
+        run: |
+          if [[ -z "$REGISTRY_RO_TOKEN" ]]; then
+            echo "::error::Set the REGISTRY_RO_TOKEN GitHub Actions secret to install private @coasti packages."
+            exit 1
+          fi
+          pnpm config set //git.linkfish.eu/api/packages/coasti/npm/:_authToken "$REGISTRY_RO_TOKEN"
+
+      - name: Install extension dependencies
+        run: pnpm --dir "$EXTENSION_DIR" install --frozen-lockfile
+
+      - name: Check extension quality
+        run: pnpm --dir "$EXTENSION_DIR" check
+
+      - name: Build extension
+        run: pnpm --dir "$EXTENSION_DIR" build
