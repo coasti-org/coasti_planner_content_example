@@ -83,8 +83,10 @@ def build_sql(
             "    haushaltstelle TEXT NOT NULL,",
             "    konto TEXT NOT NULL,",
             "    betrag REAL NOT NULL CHECK (betrag >= 0),",
-            "    datum TEXT NOT NULL,",
-            "    is_active INTEGER NOT NULL CHECK (is_active IN (0, 1)),",
+            # DATE and BOOLEAN keep SQLite's storage (text, 0/1) but let readers
+            # such as the Excel export convert the values to their real types.
+            "    datum DATE NOT NULL,",
+            "    is_active BOOLEAN NOT NULL CHECK (is_active IN (0, 1)),",
             "    can_edit_roles TEXT NOT NULL,",
             "    status TEXT NOT NULL CHECK (status IN ('draft', 'locked', 'done'))",
             ");",
