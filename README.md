@@ -184,6 +184,23 @@ Try the checks too: a negative `Betrag` or an unknown `Status` is listed as a
 problem with its Excel row, and changing a row with status `done` is rejected by
 the table's `validate_row` hook. Nothing is written while a file has problems.
 
+Ready-made test files are written to `data/excel/` (git-ignored) by
+
+```bash
+uv run --project ../framework/backend python -m scripts.generate_excel_samples
+```
+
+Run it from the extension root in any environment with `coasti-planner[excel]`.
+The changes are relative to a freshly generated `data/dummy.sqlite`:
+
+| File                           | Expected result                                                      |
+| ------------------------------ | -------------------------------------------------------------------- |
+| `dummy_table_unchanged.xlsx`   | no changes                                                           |
+| `dummy_table_valid.xlsx`       | 4 updated rows (row 10's `Konto` `4271` becomes `004271`), 1 new row |
+| `dummy_table_with_errors.xlsx` | 3 problems: negative `Betrag`, unknown `Status`, empty `Row ID`      |
+| `dummy_table_locked_row.xlsx`  | rejected: row 3 has status `done`                                    |
+| `dummy_table_replace.xlsx`     | 290 rows; mode `replace` deletes the other 10                        |
+
 | User         | Import and template | Data export |
 | ------------ | ------------------- | ----------- |
 | `admin`      | yes                 | yes         |
