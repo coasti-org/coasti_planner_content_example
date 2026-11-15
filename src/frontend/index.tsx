@@ -2,6 +2,7 @@ import type { ExtensionRuntimeContract } from "@coasti/planner-contract";
 
 import { AgreementScreen } from "./agreementScreen";
 import { ApplicationScreen } from "./applicationScreen";
+import { ExcelScreen } from "./excelScreen";
 import { HomePage } from "./homePage";
 import { LandingPageCard } from "./landingPageCard";
 import { OutletScreen } from "./outletScreen";
@@ -20,4 +21,8 @@ export function activate(context: ExtensionRuntimeContract): void {
     name: "Agreement",
   });
   context.add_screen(OutletScreen, { id: "outlets", name: "Outlets" });
+  context.add_screen(ExcelScreen, {
+    id: "excel",
+    name: "Excel import/export",
+  });
 }
