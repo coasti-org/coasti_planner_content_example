@@ -1,8 +1,8 @@
 # Example extension (content package)
 
-Example content package for the Coasti Planner: a React extension in `src/frontend/`
-and Python extension modules in `src/backend/` (`tables/`, `filters/`, `actions/`,
-and `outlets/`).
+Example content package for the Coasti Planner: a React extension in
+`src/frontend/` and Python extension modules in `src/backend/` (`tables/`,
+`filters/`, `actions/`, and `outlets/`).
 
 ## Run in Docker
 
@@ -10,7 +10,8 @@ and `outlets/`).
 
 1. Install Docker and the VS Code Dev Containers extension.
 2. Open [`content_example.code-workspace`](content_example.code-workspace)
-3. Create a .env to hold the REGISTRY_RO_TOKEN needed for framework installation.
+3. Create a .env to hold the REGISTRY_RO_TOKEN needed for framework
+   installation.
 4. Run **Dev Containers: Open Workspace in Container...**.
 5. Once attached, start the backend and the extension in two terminals:
 
@@ -60,7 +61,7 @@ so mypy can resolve the framework types:
 ```bash
 uv venv .venv
 uv pip install --python .venv/bin/python \
-  coasti-planner==0.2.4 ruff==0.16.9 mypy==2.3.1
+  "coasti-planner[excel]==0.2.4" ruff==0.16.9 mypy==2.3.1
 source .venv/bin/activate
 ```
 
@@ -122,15 +123,17 @@ copier copy https://github.com/coasti-org/coasti_planner_content_example <new-ex
 ```
 
 Copier asks for the product ID and name; the answers are stored in
-`.copier-answers.yml`. It uses the answer to generate `coasti.yml` for your product.
+`.copier-answers.yml`. It uses the answer to generate `coasti.yml` for your
+product.
 
 ### Update to a newer version
 
-Before updating, have a look at the [framework changelog](https://git.linkfish.eu/coasti/coasti_planner/src/branch/main/CHANGELOG.md).
+Before updating, have a look at the
+[framework changelog](https://git.linkfish.eu/coasti/coasti_planner/src/branch/main/CHANGELOG.md).
 In our current early development phase, expect breaking changes.
 
-Copier is based on repository tags. The template's tags are used as versions,
-so a new tag publishes a new version.
+Copier is based on repository tags. The template's tags are used as versions, so
+a new tag publishes a new version.
 
 ```bash
 copier update --trust
@@ -164,3 +167,30 @@ stays internal and is not exposed to extensions.
 Seeding only runs while the users table is empty. Delete the meta database (or
 its Docker volume) to seed again. The accounts are hardcoded in the framework's
 `coasti_planner/db/seed.py` until user management exists.
+
+### Excel import and export
+
+The **Excel import/export** screen shows the dummy table's round trip through
+Excel. It is declared in `src/backend/tables/dummy_table_excel.py` and needs the
+framework's optional extra `coasti-planner[excel]` (installed above and in the
+Docker image).
+
+1. Sign in as `admin` (role `controller`) and press **Export Excel**.
+2. Change a `Betrag` of a `draft` row in the sheet `Daten` and save the file.
+3. Press **Import Excel**, choose the file, and review the change: one updated
+   row. Confirm, and the table below refreshes.
+
+Try the checks too: a negative `Betrag` or an unknown `Status` is listed as a
+problem with its Excel row, and changing a row with status `done` is rejected by
+the table's `validate_row` hook. Nothing is written while a file has problems.
+
+| User         | Import and template | Data export |
+| ------------ | ------------------- | ----------- |
+| `admin`      | yes                 | yes         |
+| `bearbeiter` | yes                 | no          |
+| `politiker`  | no                  | no          |
+
+Only users who may see every row may export data, because the export contains
+the whole table. Date and boolean columns are declared as `DATE` and `BOOLEAN`
+in `scripts/generate_dummy_database.py`, so the export writes them with their
+real types on SQLite. Regenerate an older `data/dummy.sqlite` to pick this up.

@@ -26,7 +26,7 @@ RUN apt-get update \
     && uv python install 3.13 \
     && uv venv /opt/coasti/venv --python 3.13 \
     && uv pip install --python /opt/coasti/venv/bin/python \
-        "coasti-planner==${COASTI_VERSION}" \
+        "coasti-planner[excel]==${COASTI_VERSION}" \
     && chmod -R a+rX /opt/coasti /opt/uv
 
 FROM base AS prod

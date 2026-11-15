@@ -22,3 +22,12 @@ extensions:
     dev_url: "http://localhost:5174"
     # Content database for the example table.
     database: sqlite:///./data/dummy.sqlite
+
+# Excel import and export (needs coasti-planner[excel]). All keys are optional;
+# the values below are the defaults.
+# excel:
+#   session_ttl_minutes: 30        # a checked file waits this long for confirmation
+#   max_open_sessions_per_user: 3  # a new upload discards the oldest
+#   max_file_size_mb: 20
+#   max_rows: 200000
+#   audit_table: xls_io_audit      # in the content database; null turns it off
