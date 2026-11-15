@@ -48,12 +48,28 @@ def can_access(
     return CellAccess(can_read, can_write)
 
 
+def validate_row(
+    *,
+    user: User,
+    row_before: dict[str, object],
+    row_after: dict[str, object],
+) -> bool:
+    """Keep finished bookings unchanged.
+
+    The grid already blocks edits outside ``draft`` through ``can_access``.
+    Excel imports write whole rows without per-cell checks, so this hook is
+    what stops a file from changing a row that is already ``done``.
+    """
+    return row_before.get("status") != "done"
+
+
 dummy_table = Table(
     id="dummy_table",
     name="My Awesome Filter",
     description="My Awesome Filter Description",
     sql=Path("./dummy_table.sql"),
     can_access=can_access,
+    validate_row=validate_row,
     columns=[
         Column(
             id="row_id",
