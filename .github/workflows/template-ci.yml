@@ -1,0 +1,94 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - "**"
+  workflow_dispatch:
+  workflow_call:
+    secrets:
+      REGISTRY_RO_TOKEN:
+        required: true
+
+# Cancel superseded runs for the same ref so a fast-follow push does not queue
+# behind a stale one. Distinct pull requests use distinct refs and are
+# unaffected.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  backend:
+    name: ${{ matrix.name }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      # Report every failing check instead of cancelling the rest.
+      fail-fast: false
+      matrix:
+        include:
+          - name: Lint (ruff)
+            run: ruff check .
+          - name: Format check (ruff)
+            run: ruff format --check .
+          - name: Type check (mypy)
+            run: mypy
+    steps:
+      - name: Check out template
+        uses: actions/checkout@v4
+
+      - name: Render extension
+        id: render
+        uses: ./.github/actions/template-render
+        with:
+          registry-ro-token: ${{ secrets.REGISTRY_RO_TOKEN }}
+
+      - name: Setup backend
+        uses: ./.github/actions/setup-backend
+        with:
+          working-directory: ${{ steps.render.outputs.path }}
+
+      - name: ${{ matrix.name }}
+        working-directory: ${{ steps.render.outputs.path }}
+        run: ${{ matrix.run }}
+
+  frontend:
+    name: ${{ matrix.name }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      # Report every failing check instead of cancelling the rest.
+      fail-fast: false
+      matrix:
+        include:
+          - name: Lint (oxlint)
+            run: pnpm lint
+          - name: Format check (oxfmt)
+            run: pnpm format:check
+          - name: Type check (tsc)
+            run: pnpm typecheck
+          - name: Build (vite)
+            run: pnpm build
+    steps:
+      - name: Check out template
+        uses: actions/checkout@v4
+
+      - name: Render extension
+        id: render
+        uses: ./.github/actions/template-render
+        with:
+          registry-ro-token: ${{ secrets.REGISTRY_RO_TOKEN }}
+
+      - name: Setup frontend
+        uses: ./.github/actions/setup-frontend
+        with:
+          working-directory: ${{ steps.render.outputs.path }}
+          registry-token: ${{ secrets.REGISTRY_RO_TOKEN }}
+
+      - name: ${{ matrix.name }}
+        working-directory: ${{ steps.render.outputs.path }}
+        run: ${{ matrix.run }}

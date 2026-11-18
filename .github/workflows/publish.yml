@@ -14,7 +14,7 @@ permissions:
 
 jobs:
   checks:
-    uses: ./.github/workflows/ci.yml
+    uses: ./.github/workflows/template-ci.yml
     permissions:
       contents: read
     secrets: inherit
