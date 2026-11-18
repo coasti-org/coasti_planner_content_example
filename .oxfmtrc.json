@@ -28,6 +28,7 @@
     "**/*.toml",
     "**/*.lock",
     "pnpm-lock.yaml",
-    "**/copier_questions.yml"
+    "**/copier_questions.yml",
+    "**/.copier-answers.yml"
   ]
 }

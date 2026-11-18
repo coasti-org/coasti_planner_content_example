@@ -16,13 +16,15 @@ _exclude_templates:
 _exclude:
   - .git
   - .git/**
-  - .github
+  # Everything prefixed with template- is this repository's own ci pipeline
+  - .github/actions/template-*
+  - .github/actions/template-*/**
+  - .github/workflows/template-*
   - copier_questions.yml
   - copier.yml
 
 ---
 !include copier_questions.yml
-
 ---
 # Updates should not overwrite existing settings.
 _skip_if_exists:
