@@ -56,12 +56,12 @@ pnpm install
 **Backend**
 
 Install uv and create one environment containing the framework and the checks,
-so mypy can resolve the framework types:
+so mypy can resolve the framework types. The versions come from the `dev`
+dependency group in [`pyproject.toml`](pyproject.toml):
 
 ```bash
 uv venv .venv
-uv pip install --python .venv/bin/python \
-  coasti-planner==0.2.5 ruff==0.16.9 mypy==2.3.1
+uv pip install --python .venv/bin/python --group dev
 source .venv/bin/activate
 ```
 

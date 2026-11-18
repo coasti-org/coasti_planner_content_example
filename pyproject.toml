@@ -1,3 +1,13 @@
+# Python packages the checks and the runtime use. CI, the dev container, and
+# .github/actions/setup-backend install this group, so the pins live in one
+# place. Keep coasti-planner in sync with COASTI_VERSION in docker/Dockerfile.
+[dependency-groups]
+dev = [
+  "coasti-planner==0.2.4",
+  "mypy==2.3.1",
+  "ruff==0.16.9",
+]
+
 [tool.ruff]
 target-version = "py313"
 src = ["."]
@@ -40,6 +50,8 @@ fixable = ["ALL"]
 runtime-evaluated-base-classes = ["pydantic.BaseModel"]
 
 [tool.mypy]
+# Also the interpreter every environment creates: .github/actions/setup-backend
+# reads this value instead of pinning its own Python version.
 python_version = "3.13"
 files = [
     "src/backend/tables",
