@@ -1,0 +1,49 @@
+name: Setup frontend
+description: Install pnpm, Node.js, and the dependencies of a project.
+
+inputs:
+  working-directory:
+    description: Directory that contains package.json and pnpm-lock.yaml.
+    required: true
+  registry-token:
+    description: >-
+      Read-only token for the @coasti npm registry. Store it as the
+      REGISTRY_RO_TOKEN repository secret.
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Install pnpm
+      # pnpm/action-setup reads the version from `packageManager` in the given
+      # package.json, so the pinned version lives in exactly one place.
+      uses: pnpm/action-setup@v4
+      with:
+        package_json_file: ${{ inputs.working-directory }}/package.json
+
+    - name: Install Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: 24
+        cache: pnpm
+        cache-dependency-path: ${{ inputs.working-directory }}/pnpm-lock.yaml
+
+    - name: Configure registry authentication
+      shell: bash
+      env:
+        REGISTRY_RO_TOKEN: ${{ inputs.registry-token }}
+      # The token goes into pnpm's user-level auth.ini, never the checkout: a
+      # committed .npmrc cannot expand ${...} on pnpm >= 11.5.3.
+      run: |
+        set -euo pipefail
+        if [ -z "$REGISTRY_RO_TOKEN" ]; then
+          echo "::error::Set the REGISTRY_RO_TOKEN secret to install private @coasti packages."
+          exit 1
+        fi
+        pnpm config set "//git.linkfish.eu/api/packages/coasti/npm/:_authToken" "$REGISTRY_RO_TOKEN"
+
+    - name: Install dependencies
+      shell: bash
+      env:
+        WORKING_DIRECTORY: ${{ inputs.working-directory }}
+      run: pnpm --dir "$WORKING_DIRECTORY" install --frozen-lockfile
