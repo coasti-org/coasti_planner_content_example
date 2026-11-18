@@ -6,8 +6,9 @@ description: >-
 inputs:
   destination:
     description: >-
-      Directory to render into. Relative paths resolve against the workspace.
-      Defaults to extension/ below RUNNER_TEMP.
+      Directory to render into, relative to the workspace unless absolute.
+      Defaults to .ci/extension. Keep it inside the workspace: actions such as
+      setup-node and setup-uv only read files from the checkout.
     required: false
     default: ""
   product-id:
@@ -70,7 +71,7 @@ runs:
         REGISTRY_RO_TOKEN: ${{ inputs.registry-ro-token }}
       run: |
         set -euo pipefail
-        destination="${DESTINATION:-${RUNNER_TEMP:?RUNNER_TEMP is not set}/extension}"
+        destination="${DESTINATION:-.ci/extension}"
         case "$destination" in
           /*) ;;
           *) destination="$GITHUB_WORKSPACE/$destination" ;;

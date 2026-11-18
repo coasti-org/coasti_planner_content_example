@@ -14,12 +14,27 @@ inputs:
 runs:
   using: composite
   steps:
+    - name: Resolve the pnpm version
+      id: pnpm
+      shell: bash
+      env:
+        PACKAGE_JSON: ${{ inputs.working-directory }}/package.json
+      # pnpm/action-setup joins package_json_file onto the workspace, so it
+      # cannot take the absolute path of a render. Read the pin here instead,
+      # keeping package.json the single place that declares it.
+      run: |
+        set -euo pipefail
+        version="$(sed -n 's/.*"packageManager": *"pnpm@\([^"]*\)".*/\1/p' "$PACKAGE_JSON")"
+        if [ -z "$version" ]; then
+          echo "::error::$PACKAGE_JSON has no packageManager entry for pnpm"
+          exit 1
+        fi
+        echo "version=$version" >> "$GITHUB_OUTPUT"
+
     - name: Install pnpm
-      # pnpm/action-setup reads the version from `packageManager` in the given
-      # package.json, so the pinned version lives in exactly one place.
       uses: pnpm/action-setup@v4
       with:
-        package_json_file: ${{ inputs.working-directory }}/package.json
+        version: ${{ steps.pnpm.outputs.version }}
 
     - name: Install Node.js
       uses: actions/setup-node@v4
