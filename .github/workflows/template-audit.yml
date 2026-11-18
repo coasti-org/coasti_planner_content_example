@@ -1,0 +1,74 @@
+name: Dependency audit
+
+on:
+  schedule:
+    - cron: "0 6 * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  npm:
+    name: Audit npm dependencies
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out template
+        uses: actions/checkout@v4
+
+      - name: Render extension
+        id: render
+        uses: ./.github/actions/template-render
+        with:
+          registry-ro-token: ${{ secrets.REGISTRY_RO_TOKEN }}
+
+      - name: Setup frontend
+        uses: ./.github/actions/setup-frontend
+        with:
+          working-directory: ${{ steps.render.outputs.path }}
+          registry-token: ${{ secrets.REGISTRY_RO_TOKEN }}
+
+      - name: Audit dependencies
+        working-directory: ${{ steps.render.outputs.path }}
+        # The private registry does not proxy the advisory database, so registry
+        # errors are not a finding.
+        run: pnpm audit --ignore-registry-errors
+
+  python:
+    name: Audit Python dependencies
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out template
+        uses: actions/checkout@v4
+
+      - name: Render extension
+        id: render
+        uses: ./.github/actions/template-render
+        with:
+          registry-ro-token: ${{ secrets.REGISTRY_RO_TOKEN }}
+
+      - name: Setup backend
+        id: backend
+        uses: ./.github/actions/setup-backend
+        with:
+          working-directory: ${{ steps.render.outputs.path }}
+
+      - name: Audit dependencies
+        shell: bash
+        env:
+          VENV: ${{ steps.backend.outputs.venv }}
+        # There is no Python lockfile, so the audit covers the environment CI
+        # installs: the dev group resolved at run time plus its transitives.
+        run: |
+          set -euo pipefail
+          uv pip install --python "$VENV/bin/python" pip-audit
+          # pip-audit resolves packages through pip-api and would audit the
+          # ambient environment when VIRTUAL_ENV points somewhere else.
+          unset VIRTUAL_ENV
+          "$VENV/bin/pip-audit"
