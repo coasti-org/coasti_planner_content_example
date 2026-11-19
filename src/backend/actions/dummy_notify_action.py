@@ -1,4 +1,4 @@
-from coasti_planner.extensions.models import NotificationAction
+from coasti_planner.extension.sdk import NotificationAction
 
 dummy_notify_action = NotificationAction(
     id="dummy_notify_action",

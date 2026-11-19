@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from coasti_planner.extensions.models import SqlAction
+from coasti_planner.extension.sdk import SqlAction
 
 # Each action writes one stage into the single process_state row, which the
 # current_stage outlet reads back. The SQL is inline because the statements are

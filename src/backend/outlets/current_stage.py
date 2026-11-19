@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from coasti_planner.extensions.models import ColumnDType, Outlet
+from coasti_planner.extension.sdk import ColumnDType, Outlet
 
 # Reads the single process_state row written by the set_stage_* actions. The
 # SQL is inline because the query is small; larger queries can live in a

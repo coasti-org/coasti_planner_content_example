@@ -1,6 +1,6 @@
 """Roles declared by the example content extension."""
 
-from coasti_planner.extensions.models import Role
+from coasti_planner.extension.sdk import Role
 
 bearbeiter = Role(
     id="bearbeiter",

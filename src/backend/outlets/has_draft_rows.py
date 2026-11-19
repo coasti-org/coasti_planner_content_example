@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from coasti_planner.extensions.models import ColumnDType, Outlet
+from coasti_planner.extension.sdk import ColumnDType, Outlet
 
 has_draft_rows = Outlet(
     id="has_draft_rows",

@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from coasti_planner.extensions.models import (
+from coasti_planner.extension.sdk import (
     ActionSequence,
     NotificationAction,
     SqlAction,

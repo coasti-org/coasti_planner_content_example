@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from coasti_planner.extensions.models.filter import SQLFilter
+from coasti_planner.extension.sdk.filter import SQLFilter
 
 dummy_filter = SQLFilter(
     id="dummy_filter",

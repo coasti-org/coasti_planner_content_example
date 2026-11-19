@@ -3,7 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from coasti_planner.extensions.models import (
+from coasti_planner.extension.sdk import (
     CellAccess,
     Column,
     ColumnDType,
@@ -12,7 +12,7 @@ from coasti_planner.extensions.models import (
 )
 
 if TYPE_CHECKING:
-    from coasti_planner.extensions.models import User
+    from coasti_planner.extension.sdk import User
 
 
 def can_access(
