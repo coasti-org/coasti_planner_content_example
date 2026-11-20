@@ -1,0 +1,63 @@
+name: Setup backend
+description: >-
+  Create the Python environment the project declares in pyproject.toml and put
+  it on PATH.
+
+inputs:
+  working-directory:
+    description: >-
+      Directory that contains pyproject.toml. Also the directory the checks run
+      from, so mypy finds the configuration.
+    required: true
+
+outputs:
+  venv:
+    description: Absolute path of the created environment.
+    value: ${{ steps.install.outputs.venv }}
+
+runs:
+  using: composite
+  steps:
+    - name: Install uv
+      uses: astral-sh/setup-uv@v6
+      with:
+        version: 0.11.28
+
+    - name: Install dependencies
+      id: install
+      shell: bash
+      env:
+        WORKING_DIRECTORY: ${{ inputs.working-directory }}
+      run: |
+        set -euo pipefail
+        working_directory="$(realpath "$WORKING_DIRECTORY")"
+        venv="$working_directory/.venv"
+
+        # pyproject.toml owns the Python and tool versions: [tool.mypy]
+        # python_version sets the interpreter, [dependency-groups] dev pins the
+        # framework and the quality tools.
+        python_version="$(python3 -c 'import sys, tomllib; print(tomllib.load(open(sys.argv[1], "rb"))["tool"]["mypy"]["python_version"])' "$working_directory/pyproject.toml")"
+
+        uv python install "$python_version"
+        uv venv "$venv" --python "$python_version"
+        uv pip install --python "$venv/bin/python" --group dev --directory "$working_directory"
+
+        # Stopgap until the coasti-planner wheel ships the PEP 561 marker:
+        # without it mypy treats the framework as untyped and strict mode fails
+        # with import-untyped.
+        for site_packages in "$venv"/lib/python*/site-packages; do
+          marker="$site_packages/coasti_planner/py.typed"
+          if [ ! -e "$marker" ]; then
+            touch "$marker"
+            echo "::warning::coasti-planner ships no py.typed marker; created it so strict mypy resolves the framework types. Remove this workaround once the release includes it."
+          fi
+        done
+
+        echo "venv=$venv" >> "$GITHUB_OUTPUT"
+        echo "$venv/bin" >> "$GITHUB_PATH"
+
+        # Record what the project pins resolved to; this is the version the
+        # checks in later steps actually run with.
+        "$venv/bin/python" --version
+        "$venv/bin/ruff" --version
+        "$venv/bin/mypy" --version

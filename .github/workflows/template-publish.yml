@@ -1,0 +1,40 @@
+name: Publish template release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+# Serialise releases instead of cancelling them: a cancelled run could leave a
+# tag without its release.
+concurrency:
+  group: publish-template-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    name: Checks
+    uses: ./.github/workflows/template-ci.yml
+    permissions:
+      contents: read
+    secrets: inherit
+
+  release:
+    name: Release
+    needs: checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - name: Check out template tag
+        uses: actions/checkout@v4
+
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" --title "$GITHUB_REF_NAME" --generate-notes

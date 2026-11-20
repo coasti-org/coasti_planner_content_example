@@ -1,0 +1,64 @@
+name: Setup frontend
+description: Install pnpm, Node.js, and the dependencies of a project.
+
+inputs:
+  working-directory:
+    description: Directory that contains package.json and pnpm-lock.yaml.
+    required: true
+  registry-token:
+    description: >-
+      Read-only token for the @coasti npm registry. Store it as the
+      REGISTRY_RO_TOKEN repository secret.
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Resolve the pnpm version
+      id: pnpm
+      shell: bash
+      env:
+        PACKAGE_JSON: ${{ inputs.working-directory }}/package.json
+      # pnpm/action-setup joins package_json_file onto the workspace, so it
+      # cannot take the absolute path of a render. Read the pin here instead,
+      # keeping package.json the single place that declares it.
+      run: |
+        set -euo pipefail
+        version="$(sed -n 's/.*"packageManager": *"pnpm@\([^"]*\)".*/\1/p' "$PACKAGE_JSON")"
+        if [ -z "$version" ]; then
+          echo "::error::$PACKAGE_JSON has no packageManager entry for pnpm"
+          exit 1
+        fi
+        echo "version=$version" >> "$GITHUB_OUTPUT"
+
+    - name: Install pnpm
+      uses: pnpm/action-setup@v4
+      with:
+        version: ${{ steps.pnpm.outputs.version }}
+
+    - name: Install Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: 24
+        cache: pnpm
+        cache-dependency-path: ${{ inputs.working-directory }}/pnpm-lock.yaml
+
+    - name: Configure registry authentication
+      shell: bash
+      env:
+        REGISTRY_RO_TOKEN: ${{ inputs.registry-token }}
+      # The token goes into pnpm's user-level auth.ini, never the checkout: a
+      # committed .npmrc cannot expand ${...} on pnpm >= 11.5.3.
+      run: |
+        set -euo pipefail
+        if [ -z "$REGISTRY_RO_TOKEN" ]; then
+          echo "::error::Set the REGISTRY_RO_TOKEN secret to install private @coasti packages."
+          exit 1
+        fi
+        pnpm config set "//git.linkfish.eu/api/packages/coasti/npm/:_authToken" "$REGISTRY_RO_TOKEN"
+
+    - name: Install dependencies
+      shell: bash
+      env:
+        WORKING_DIRECTORY: ${{ inputs.working-directory }}
+      run: pnpm --dir "$WORKING_DIRECTORY" install --frozen-lockfile

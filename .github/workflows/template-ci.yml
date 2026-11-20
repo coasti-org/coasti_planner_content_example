@@ -1,0 +1,154 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+  workflow_call:
+    secrets:
+      REGISTRY_RO_TOKEN:
+        required: true
+
+# Cancel superseded runs for the same ref so a fast-follow push does not queue
+# behind a stale one. Distinct pull requests use distinct refs and are
+# unaffected.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  # Fails when the template renders into something we would not hand out. The
+  # checks live in .github/workflows/template-verify.sh so they can be run against
+  # any render by hand.
+  contract:
+    name: Template contract
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    # A known placeholder rather than a secret: the render proves the token
+    # answer stays inside the rendered .env and nowhere else. This job is the
+    # only one that uses it.
+    env:
+      SENTINEL_TOKEN: ci-sentinel-token
+    steps:
+      - name: Check out template
+        uses: actions/checkout@v4
+
+      - name: Render the template
+        id: render
+        uses: ./.github/actions/template-render
+        with:
+          registry-ro-token: ${{ env.SENTINEL_TOKEN }}
+
+      - name: Verify the rendered project
+        shell: bash
+        env:
+          RENDERED: ${{ steps.render.outputs.path }}
+          SENTINEL_TOKEN: ${{ env.SENTINEL_TOKEN }}
+        run: |
+          set -euo pipefail
+          .github/workflows/template-verify.sh "$RENDERED" "$SENTINEL_TOKEN"
+
+      - name: Lint ci.yml.jinja (actionlint)
+        shell: bash
+        env:
+          RENDERED: ${{ steps.render.outputs.path }}
+        run: |
+          set -euo pipefail
+          docker run --rm \
+            -v "$RENDERED:/repo" \
+            -w /repo \
+            --entrypoint sh \
+            rhysd/actionlint:1.7.12 \
+            -c 'actionlint .github/workflows/*.yml'
+
+      - name: Render with an invalid product_id (expected to fail)
+        id: invalid
+        continue-on-error: true
+        uses: ./.github/actions/template-render
+        with:
+          destination: ${{ runner.temp }}/invalid-extension
+          product-id: Bad-ID
+          registry-ro-token: ${{ env.SENTINEL_TOKEN }}
+
+      - name: Assert Copier rejected the invalid product_id
+        if: steps.invalid.outcome == 'success'
+        shell: bash
+        run: |
+          echo "::error::Copier accepted an invalid product_id; the question validator is missing or broken."
+          exit 1
+
+  backend:
+    name: ${{ matrix.name }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      # Report every failing check instead of cancelling the rest.
+      fail-fast: false
+      matrix:
+        include:
+          - name: Lint (ruff)
+            run: ruff check .
+          - name: Format check (ruff)
+            run: ruff format --check .
+          - name: Type check (mypy)
+            run: mypy
+    steps:
+      - name: Check out template
+        uses: actions/checkout@v4
+
+      - name: Render extension
+        id: render
+        uses: ./.github/actions/template-render
+        with:
+          registry-ro-token: ${{ secrets.REGISTRY_RO_TOKEN }}
+
+      - name: Setup backend
+        uses: ./.github/actions/setup-backend
+        with:
+          working-directory: ${{ steps.render.outputs.path }}
+
+      - name: ${{ matrix.name }}
+        working-directory: ${{ steps.render.outputs.path }}
+        run: ${{ matrix.run }}
+
+  frontend:
+    name: ${{ matrix.name }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      # Report every failing check instead of cancelling the rest.
+      fail-fast: false
+      matrix:
+        include:
+          - name: Lint (oxlint)
+            run: pnpm lint
+          - name: Format check (oxfmt)
+            run: pnpm format:check
+          - name: Type check (tsc)
+            run: pnpm typecheck
+          - name: Build (vite)
+            run: pnpm build
+    steps:
+      - name: Check out template
+        uses: actions/checkout@v4
+
+      - name: Render extension
+        id: render
+        uses: ./.github/actions/template-render
+        with:
+          registry-ro-token: ${{ secrets.REGISTRY_RO_TOKEN }}
+
+      - name: Setup frontend
+        uses: ./.github/actions/setup-frontend
+        with:
+          working-directory: ${{ steps.render.outputs.path }}
+          registry-token: ${{ secrets.REGISTRY_RO_TOKEN }}
+
+      - name: ${{ matrix.name }}
+        working-directory: ${{ steps.render.outputs.path }}
+        run: ${{ matrix.run }}

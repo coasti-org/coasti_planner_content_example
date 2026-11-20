@@ -1,0 +1,98 @@
+name: Render extension template
+description: >-
+  Render this Copier template into a scratch directory and expose the path, so
+  the checks run against a generated project instead of the template sources.
+
+inputs:
+  destination:
+    description: >-
+      Directory to render into, relative to the workspace unless absolute.
+      Defaults to .ci/extension. Keep it inside the workspace: actions such as
+      setup-node and setup-uv only read files from the checkout.
+    required: false
+    default: ""
+  product-id:
+    description: Answer for product_id.
+    required: false
+    default: ci_example
+  product-name:
+    description: Answer for product_name.
+    required: false
+    default: CI Example
+  id-shorthand:
+    description: Answer for id_shorthand.
+    required: false
+    default: ci
+  product-description:
+    description: Answer for product_description.
+    required: false
+    default: CI-rendered template
+  version:
+    description: >-
+      Answer for version. A leading "v" is stripped, so a tag name such as
+      v1.2.3 renders the SemVer answer 1.2.3.
+    required: false
+    default: 0.1.0
+  registry-ro-token:
+    description: >-
+      Answer for registry_ro_token, written to the rendered .env. Copier
+      requires it, so pass a placeholder when the render does not install
+      packages.
+    required: true
+
+outputs:
+  path:
+    description: Absolute path of the rendered project.
+    value: ${{ steps.render.outputs.path }}
+
+runs:
+  using: composite
+  steps:
+    - name: Install Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.13"
+
+    - name: Install uv
+      uses: astral-sh/setup-uv@v6
+      with:
+        version: 0.11.28
+
+    - name: Render with Copier
+      id: render
+      shell: bash
+      env:
+        DESTINATION: ${{ inputs.destination }}
+        PRODUCT_ID: ${{ inputs.product-id }}
+        PRODUCT_NAME: ${{ inputs.product-name }}
+        ID_SHORTHAND: ${{ inputs.id-shorthand }}
+        PRODUCT_DESCRIPTION: ${{ inputs.product-description }}
+        VERSION_ANSWER: ${{ inputs.version }}
+        REGISTRY_RO_TOKEN: ${{ inputs.registry-ro-token }}
+      run: |
+        set -euo pipefail
+        destination="${DESTINATION:-.ci/extension}"
+        case "$destination" in
+          /*) ;;
+          *) destination="$GITHUB_WORKSPACE/$destination" ;;
+        esac
+
+        # Tag names carry a "v" prefix; the template answers are bare SemVer.
+        version="${VERSION_ANSWER#v}"
+
+        rm -rf "$destination"
+        # --vcs-ref=HEAD pins the render to the checked-out revision. Without it
+        # Copier prefers the newest git tag of a local template, which would
+        # validate a release instead of the change under test.
+        uvx --from copier==9.17.0 copier copy "$GITHUB_WORKSPACE" "$destination" \
+          --vcs-ref=HEAD \
+          --trust \
+          --defaults \
+          --data "product_id=$PRODUCT_ID" \
+          --data "product_name=$PRODUCT_NAME" \
+          --data "id_shorthand=$ID_SHORTHAND" \
+          --data "product_description=$PRODUCT_DESCRIPTION" \
+          --data "version=$version" \
+          --data "registry_ro_token=$REGISTRY_RO_TOKEN"
+
+        echo "path=$destination" >> "$GITHUB_OUTPUT"
